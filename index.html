@@ -487,13 +487,13 @@ function palabrasANum(t){
 function habla(t){
   t=t.replace(/\b(sun\s*chemical|sunchemical)\b/g,'sun ').replace(/\b(sigwerk|siegwerk|zigwerk|sigverk|siegwer)\b/g,'sie ').replace(/\bsakata\b/g,'sak ')
     .replace(/\b(druck and chemie|druck|druk|drug)\b/g,'dru ').replace(/\bcarbonell\b/g,'car ').replace(/\bheidelberg\b/g,'hei ')
-    .replace(/\b(cromacolor|croma color)\b/g,'cro ').replace(/\b(weibulger|weilburger)\b/g,'wei ').replace(/\b(son|sum)(?=\s+\d)/g,'sun');
+    .replace(/\b(cromacolor|croma color)\b/g,'cro ').replace(/\b(weibulger|weilburger)\b/g,'wei ').replace(/\b(son|sum|san|zun|sunn)(?=[\s.,\-]+\d)/g,'sun');
   return palabrasANum(t)}
 
 
 var PREFS=Object.keys(CAT.prefijos).map(function(k){return CAT.prefijos[k].toLowerCase()}).join('|');
 function parseSalida(raw){
-  var t=habla(nz(raw)).replace(/\b(guion|barra|menos)\b/g,'-'),re=new RegExp('\\b('+PREFS+')[\\s.\\-\\/]*(\\d{2})[\\s.\\-\\/]*(\\d{1,3})\\b','g'),ms=[],m;
+  var t=habla(nz(raw)).replace(/\b(guion|barra|menos)\b/g,'-'),re=new RegExp('\\b('+PREFS+')[\\s.,\\-\\/]*(\\d{2})[\\s.,\\-\\/]*(\\d{1,3})\\b','g'),ms=[],m;
   while((m=re.exec(t)))ms.push({pre:m[1],yy:m[2],n:m[3],i:m.index,e:m.index+m[0].length});
   var rows=[];
   ms.forEach(function(x,idx){

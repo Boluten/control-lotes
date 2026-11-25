@@ -1,7 +1,5 @@
-<!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Control de Lotes</title>
-<meta name="theme-color" content="#006F9E"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Control de Lotes Rapida</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -133,7 +131,29 @@ button.danger{background:transparent;border-color:var(--bad);color:var(--bad);mi
 #toast.show{opacity:1}
 @media (min-width:760px){#toast{bottom:24px} body{padding-block-end:48px}}
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
-[hidden]{display:none!important}.lblbtn{width:100%;box-sizing:border-box}
+
+/* semana: etiqueta de trazabilidad y ensayo */
+.zona{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.zona>header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.zona h3{font-size:1.3rem;letter-spacing:.04em;text-transform:uppercase}
+.zona .link{align-self:flex-start;padding-inline:0}
+.zlot{display:flex;flex-direction:column;gap:6px;min-width:0}
+.zlot+.zlot{border-top:1px solid var(--line);padding-top:10px}
+.zlot .chk{align-items:flex-start}
+.zlot .chk span{min-width:0;overflow-wrap:anywhere}
+.zlot small{color:var(--muted);font-size:.86rem}
+.zsum{padding-left:34px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
+.zdet{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding-left:34px}
+.zdet input{min-height:42px;padding:7px 10px}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;font-size:.95rem;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.na,.kv dd.na{color:var(--warn);font-weight:500}
+.lblprev{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;justify-content:center}
+.lblprev svg{width:100%;max-width:560px;height:auto;display:block}
+.copies{display:flex;align-items:center;gap:8px;text-transform:none;font-weight:500;font-size:.92rem;color:var(--ink);letter-spacing:0}
+.copies input{width:72px;text-align:center}
+
 </style>
 
 <div class="wrap">
@@ -145,7 +165,7 @@ button.danger{background:transparent;border-color:var(--bad);color:var(--bad);mi
     <div class="sync" id="sync"><span class="dot"></span><span id="sync-txt">Conectando…</span></div>
   </header>
 
-  <div id="scanbar" style="display:flex;flex-direction:column;gap:6px"><button class="lblbtn pri" id="btn-scan" type="button"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9V5a2 2 0 0 1 2-2h4M17 3h4a2 2 0 0 1 2 2v4M23 17v4a2 2 0 0 1-2 2h-4M9 23H5a2 2 0 0 1-2-2v-4"/><path d="M4 13h18"/></svg>Escanear QR</button><div class="row" style="justify-content:space-between;gap:8px"><label class="link" for="scan-file" style="font-size:.9rem;text-transform:none;letter-spacing:0;font-weight:500">Hacer foto al QR</label><label class="link" for="scan-gal" style="font-size:.9rem;text-transform:none;letter-spacing:0;font-weight:500">Elegir una foto</label></div><div class="row" style="gap:8px"><input id="lote-in" type="text" autocapitalize="characters" placeholder="O escribe el lote: SUN26-77" style="flex:1;min-width:0"><button class="ghost" id="lote-go" type="button">Ir</button></div></div>
+  <div id="scanbar" style="display:flex;flex-direction:column;gap:6px"><label class="lblbtn pri" for="scan-file" id="btn-scan" role="button"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9V5a2 2 0 0 1 2-2h4M17 3h4a2 2 0 0 1 2 2v4M23 17v4a2 2 0 0 1-2 2h-4M9 23H5a2 2 0 0 1-2-2v-4"/><path d="M4 13h18"/></svg>Escanear QR</label><div class="row" style="justify-content:space-between;gap:4px"><label class="link" for="scan-gal" style="font-size:.9rem;text-transform:none;letter-spacing:0;font-weight:500">Elegir una foto ya hecha</label><span class="hint" style="font-size:.82rem">También vale la cámara normal del móvil</span></div><div class="row" style="gap:8px"><input id="lote-in" type="text" inputmode="text" autocapitalize="characters" placeholder="O escribe el lote: SUN26-77" style="flex:1;min-width:0"><button class="ghost" id="lote-go" type="button">Ir</button></div></div>
   <input type="file" id="scan-file" accept="image/*" capture="environment" class="vh">
   <input type="file" id="scan-gal" accept="image/*" class="vh">
   
@@ -155,6 +175,7 @@ button.danger{background:transparent;border-color:var(--bad);color:var(--bad);mi
     <button role="tab" data-tab="stock" aria-selected="false">Stock</button>
     <button role="tab" data-tab="historial" aria-selected="false">Historial</button>
     <button role="tab" data-tab="etiquetas" aria-selected="false">Etiquetas</button>
+    <button role="tab" data-tab="semana" aria-selected="false">Semana</button>
   </nav>
 
   <section id="v-scan" style="display:none;flex-direction:column;gap:12px"></section>
@@ -170,7 +191,7 @@ button.danger{background:transparent;border-color:var(--bad);color:var(--bad);mi
       <label for="dictado">Dicta o escribe</label>
       <textarea id="dictado" rows="3" autocomplete="off" autocapitalize="off"></textarea>
       <div class="row">
-        <button class="primary" id="btn-interp">Interpretar</button><button class="ghost" id="btn-mic" type="button">🎤 Dictar</button>
+        <button class="primary" id="btn-interp">Interpretar</button>
         <button class="ghost" id="btn-limpiar">Limpiar</button>
       </div>
       <p class="hint" id="hint-dictado"></p>
@@ -228,13 +249,6 @@ button.danger{background:transparent;border-color:var(--bad);color:var(--bad);mi
         <label style="display:flex;gap:8px;align-items:center;text-transform:none;font-weight:500;font-size:.92rem"><input type="checkbox" id="chk-all" style="width:20px;min-height:20px"> Incluir los ya descargados</label>
       </div>
     </div>
-    <div class="card">
-      <h3>Sincronizar móvil y ordenador</h3>
-      <p class="hint">Exporta los datos de este dispositivo e impórtalos en el otro. Se suman los movimientos que faltan sin duplicar nada. Hazlo al terminar el día o la semana. También sirve de copia de seguridad.</p>
-      <div class="row"><button class="primary" id="btn-bk-exp">Exportar datos</button><label class="lblbtn gho" for="bk-file" style="flex:1">Importar datos</label></div>
-      <input type="file" id="bk-file" accept=".json,application/json" class="vh">
-      <p class="hint" id="bk-info"></p>
-    </div>
     <div class="list" id="histlist"></div>
   </section>
 
@@ -253,19 +267,35 @@ button.danger{background:transparent;border-color:var(--bad);color:var(--bad);mi
     </div>
     <div class="list" id="etqlist"></div>
   </section>
+
+  <!-- SEMANA -->
+  <section id="v-semana" style="display:none;flex-direction:column;gap:12px">
+    <div class="card">
+      <h3>Etiqueta semanal</h3>
+      <p class="hint">Marca los lotes que están en uso en cada zona. La etiqueta lleva un único QR que abre la semana con los lotes, albaranes y fechas. Vienen marcados los lotes ya empezados.</p>
+      <div class="f"><label for="w-sem">Semana</label><input id="w-sem" class="mono" autocomplete="off" autocapitalize="characters" placeholder="26SEM47"></div>
+    </div>
+    <div id="w-zonas" style="display:flex;flex-direction:column;gap:12px"></div>
+    <div id="w-msgs" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button class="primary big" id="w-save">Guardar semana</button>
+    <div class="card">
+      <h3>Semanas guardadas</h3>
+      <div class="f"><label for="w-q">Buscar un lote en todas las semanas</label><input id="w-q" type="search" placeholder="Lote interno, lote del fabricante o albarán" autocomplete="off"></div>
+      <div class="list" id="w-list"></div>
+    </div>
+  </section>
+
+  <!-- ENSAYO DE TRAZABILIDAD -->
+  <section id="v-ensayo" style="display:none;flex-direction:column;gap:12px"></section>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 
-<div id="live" hidden style="position:fixed;inset:0;z-index:50;background:#000;display:flex;flex-direction:column"><video id="live-video" playsinline muted style="flex:1;min-height:0;width:100%;object-fit:cover"></video>
-<div style="position:absolute;left:0;right:0;top:0;padding:16px;color:#fff;font:600 1.1rem system-ui;text-align:center;background:linear-gradient(#000a,#0000)" id="live-msg"></div>
-<div style="position:absolute;inset:0;display:grid;place-items:center;pointer-events:none"><div style="width:62vmin;height:62vmin;border:3px solid #fff;border-radius:18px;box-shadow:0 0 0 100vmax #0006"></div></div>
-<button id="live-close" type="button" style="position:absolute;left:16px;right:16px;bottom:24px;min-height:54px;border:0;border-radius:12px;background:#fff;color:#14202B;font:600 1.1rem system-ui">Cerrar cámara</button></div>
 <script>
 (function(){
 'use strict';
 /* ----- generador de QR (corrección M, versiones 1 a 10, modo byte) ----- */
 var QR=(function(){
-  var ECC=[0,10,16,26,18,24,16,18,22,22,26], NB=[0,1,1,1,2,2,4,4,4,5,5];
+  var ECC=[0,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28], NB=[0,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10];
   function rawModules(v){var r=(16*v+128)*v+64;if(v>=2){var n=Math.floor(v/7)+2;r-=(25*n-10)*n-55;if(v>=7)r-=36}return r}
   function dataCw(v){return Math.floor(rawModules(v)/8)-ECC[v]*NB[v]}
   var EXP=[],LOG=[];
@@ -279,8 +309,8 @@ var QR=(function(){
 
   function encode(text){
     var bytes=Array.prototype.slice.call(new TextEncoder().encode(text)),v;
-    for(v=1;v<=10;v++){if(4+(v<=9?8:16)+bytes.length*8<=dataCw(v)*8)break}
-    if(v>10)throw new Error('Texto demasiado largo para el QR');
+    for(v=1;v<=16;v++){if(4+(v<=9?8:16)+bytes.length*8<=dataCw(v)*8)break}
+    if(v>16)throw new Error('Texto demasiado largo para el QR');
     var bits=[];function put(val,len){for(var i=len-1;i>=0;i--)bits.push((val>>>i)&1)}
     put(4,4);put(bytes.length,v<=9?8:16);bytes.forEach(function(b){put(b,8)});
     var cap=dataCw(v)*8;put(0,Math.min(4,cap-bits.length));while(bits.length%8)bits.push(0);
@@ -346,62 +376,8 @@ var QR=(function(){
   return {encode:encode,svg:svg}
 })();
 
-var APP_URL='https://boluten.github.io/control-lotes/';
+var APP_URL='https://claude.ai/artifact/4B9U9vxYhUMMAMVBfetRBn';
 var CAT={"prefijos":{"ASG":"ASG","CARBONELL":"CAR","CROMACOLOR":"CRO","DRUCK AND CHEMIE":"DRU","HEIDELBERG":"HEI","SAKATA":"SAK","SIEGWERK":"SIE","SUN CHEMICAL":"SUN","WEIBULGER":"WEI"},"seq26":{"SIE":62,"DRU":22,"SUN":83,"SAK":74,"ASG":11},"meses":{"HUBER":9,"LITHO PACK":18,"LW":12,"MT862":17,"NPS":60,"NUTRIPACK 2":24,"OSF":12,"PLASTIC LED":12,"PTN":12,"SP":18,"STARLUXE":18,"SUNPAK":36,"UVM777":5,"VINYL OSF":6},"combos":[{"c":"SUN CHEMICAL","a":"TRASLUCIDA USTX48","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"BLACK USTX24","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"YELLOW USTX26","m":"STARLUXE","t":"UV"},{"c":"SAKATA","a":"YELLOW UV","m":"UVXCEL","t":"UV"},{"c":"SAKATA","a":"BLACK UV","m":"UVXCEL","t":"UV"},{"c":"SAKATA","a":"MAGENTA UV","m":"UVXCEL","t":"UV"},{"c":"SUN CHEMICAL","a":"MAGENTA USTX27","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"VIOLET USTX53","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"BLACK USTX50","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"CYAN USTX25","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"RED032 USTX32","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"GREEN USTX71","m":"STARLUXE","t":"UV"},{"c":"SIEGWERK","a":"TRASLUCIDA UV","m":"SP","t":"UV"},{"c":"SAKATA","a":"BLANCO OPACO UV","m":"VINYL OSF","t":"UV"},{"c":"SUN CHEMICAL","a":"ORANGE USTX21","m":"STARLUXE","t":"UV"},{"c":"SIEGWERK","a":"YELLOW","m":"NUTRIPACK 2","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"BLACK","m":"NUTRIPACK 2","t":"CONVENCIONAL"},{"c":"SAKATA","a":"CYAN UV","m":"UVXCEL","t":"UV"},{"c":"SIEGWERK","a":"BLANCO OPACO UV","m":"LITHO PACK","t":"UV"},{"c":"ASG","a":"ORO 873","m":"HUBER","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"PLATA UV 877","m":"UVM277","t":"UV"},{"c":"SUN CHEMICAL","a":"ORANGE021 USTX21","m":"STARLUXE","t":"UV"},{"c":"SAKATA","a":"PLATA UV 877","m":"LW","t":"UV"},{"c":"SUN CHEMICAL","a":"YELLOW FSP26","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"ASG","a":"ORO UV 874","m":"HUBER","t":"UV"},{"c":"SUN CHEMICAL","a":"P-286","m":"STARLUXE","t":"UV"},{"c":"ASG","a":"ORO 871","m":"HUBER","t":"CONVENCIONAL"},{"c":"ASG","a":"ORO UV 873","m":"HUBER","t":"UV"},{"c":"SAKATA","a":"TRASLUCIDA LED48","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"REFLEX BLUE UV","m":"SP","t":"UV"},{"c":"SUN CHEMICAL","a":"MAGENTA FSP27","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"BLACK FSP46","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"TRASLUCIDA UV","m":"LITHO PACK","t":"UV"},{"c":"ASG","a":"ORO UV 871","m":"HUBER","t":"UV"},{"c":"SUN CHEMICAL","a":"PINK USTX56","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"Cyan USTX25","m":"STARLUXE","t":"UV"},{"c":"SAKATA","a":"BLANCO OPACO LED00","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"YELLOW UV","m":"OSF","t":"UV"},{"c":"SIEGWERK","a":"BLACK UV","m":"SP","t":"UV"},{"c":"SUN CHEMICAL","a":"CYAN FSP25","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"SAKATA","a":"BLACK UV","m":"OSF","t":"UV"},{"c":"SAKATA","a":"MAGENTA UV","m":"OSF","t":"UV"},{"c":"SAKATA","a":"RUBINE RED LED42","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"VIOLET UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"WARM RED UV","m":"LITHO PACK","t":"UV"},{"c":"SUN CHEMICAL","a":"PLATA UV 877","m":"UVM777","t":"UV"},{"c":"SUN CHEMICAL","a":"TRASLUCIDA NPS48","m":"NPS","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"WARM RED UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"RUBINE RED UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"RHODAMINE RED UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"REFLEX BLUE UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"GREEN UV","m":"SP","t":"UV"},{"c":"SAKATA","a":"CYAN UV","m":"OSF","t":"UV"},{"c":"SAKATA","a":"BLACK UV LED24","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"RED032 LED32","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"CYAN UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"Cyan","m":"NUTRIPACK 2","t":"CONVENCIONAL"},{"c":"SAKATA","a":"MAGENTA UV LED27","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"YELLOW UV LED26","m":"PLASTIC LED","t":"UV"},{"c":"SUN CHEMICAL","a":"P-186","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"PLATA 877","m":"MT862","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"NEGRO FSP46","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"SAKATA","a":"GREEN LED71","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"ORANGE021 LED21","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"REFLEX BLUE UV LED91","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"RHODAMINE RED LED55","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"CYAN UV LED25","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"CYAN LED25","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"Cyan UV","m":"UVXCEL","t":"UV"},{"c":"SAKATA","a":"FLUOR PINK 806 C","m":"PTN","t":"CONVENCIONAL"},{"c":"SAKATA","a":"REFLEX BLUE LW91","m":"LW","t":"UV"},{"c":"SAKATA","a":"VIOLET LW53","m":"LW","t":"UV"},{"c":"SAKATA","a":"TRASLUCIDA LW48","m":"LW","t":"UV"},{"c":"SUN CHEMICAL","a":"P-368","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"YELLOW 012 NPS15","m":"NPS","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"VIOLET UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"MAGENTA UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"MAGENTA","m":"NUTRIPACK 2","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"YELLOW UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"RUBINE RED UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"RED 032 UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"MAGENTA UV","m":"SP","t":"UV"},{"c":"SAKATA","a":"WARM RED LED31","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"BLACK UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"CYAN UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"CYAN","m":"NUTRIPACK 2","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"GREEN UV","m":"LITHO PACK","t":"UV"},{"c":"ASG","a":"ORO 874 UV","m":"PLAST","t":"UV"},{"c":"ASG","a":"ORO 871 UV","m":"PLAST","t":"UV"},{"c":"ASG","a":"ORO 873 UV","m":"PLAST","t":"UV"},{"c":"SAKATA","a":"BLACK UV LED","m":"PLASTIC LED","t":"UV"},{"c":"DRUCK AND CHEMIE","a":"ADITIVO","m":"DH PLUS WASSERTOP","t":"UV"},{"c":"SAKATA","a":"BLACK LED24","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"BLACK LED24","m":"LW","t":"UV"},{"c":"DRUCK AND CHEMIE","a":"ALCOHOL","m":"ISO 800","t":"UV"},{"c":"SAKATA","a":"CYAN LED25","m":"LW","t":"UV"},{"c":"SAKATA","a":"BLUE072 LED72","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"BLANCO OPACO  UV","m":"VINYL OSF","t":"UV"},{"c":"SAKATA","a":"MAGENTA LED27","m":"LW","t":"UV"},{"c":"SAKATA","a":"GREEN LW71","m":"LW","t":"UV"},{"c":"SAKATA","a":"FLUOR PINK 806 C","m":"PTN","t":"UV"},{"c":"SAKATA","a":"MAGENTA LED27","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"Cyan UV","m":"SP","t":"UV"},{"c":"SAKATA","a":"YELLOW LED26","m":"LW","t":"UV"},{"c":"SAKATA","a":"YELLOW LED26","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"ORANGE LW21","m":"LW","t":"UV"},{"c":"SAKATA","a":"RUBINE RED LW42","m":"LW","t":"UV"},{"c":"SAKATA","a":"TRASLUCIDA LW48","m":"LW LM","t":"UV"},{"c":"SAKATA","a":"VIOLET LED53","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"VIOLET UV LED53","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"REFLEX BLUE LED91","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"BLUE072 UV LED072","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"FLUOR PINK 806 C","m":"LW","t":"UV"},{"c":"SAKATA","a":"Cyan UV LED25","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"ORANGE021 UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"RHODAMINE RE UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"RHODAMINE RED UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"TRASLUCIDA","m":"SP","t":"UV"},{"c":"SUN CHEMICAL","a":"BLACK24 USTX24","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"BLANCO OPACO USTX84","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"BLACK NPS50","m":"NPS","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"YELLOW UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"ORANGE UV","m":"LITHO PACK","t":"UV"},{"c":"SUN CHEMICAL","a":"Cyan FSP25","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"GREEN NPS71","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"PROCESS BLUE NPS17","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"TRALUCIDA USTX48","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"TRASLUCIDA  USTX48","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"REFLEX BLUE NPS91","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"RUBINE RED NPS42","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"WARM RED NPS31","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"VIOLET NPS52","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"YELLOW NPS18","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"YELLOW USTX26(INT)","m":"STARLUXE","t":"UV"}],"tipos":["UV","CONVENCIONAL",""]};
-/* ================= DATOS EN EL DISPOSITIVO (IndexedDB) + SINCRONIZACIÓN POR ARCHIVO ================= */
-var LocalDB=(function(){
-  var DB_NAME='control-lotes',KEY='estado',state={lotes:{},movimientos:{},botes:{}},subs=[],idb=null,saveT=null;
-  function rid(){var a='abcdefghijklmnopqrstuvwxyz0123456789',s='',i,r=new Uint8Array(20);(crypto||window.crypto).getRandomValues(r);for(i=0;i<20;i++)s+=a[r[i]%36];return s}
-  function openIdb(){return new Promise(function(res){try{var rq=indexedDB.open(DB_NAME,1);rq.onupgradeneeded=function(){rq.result.createObjectStore('kv')};
-    rq.onsuccess=function(){idb=rq.result;res()};rq.onerror=function(){res()}}catch(e){res()}})}
-  function load(){return new Promise(function(res){
-    if(idb){try{var g=idb.transaction('kv').objectStore('kv').get(KEY);g.onsuccess=function(){if(g.result)state=Object.assign({lotes:{},movimientos:{},botes:{}},g.result);res()};g.onerror=function(){res()};return}catch(e){}}
-    try{var t=localStorage.getItem(DB_NAME);if(t)state=Object.assign({lotes:{},movimientos:{},botes:{}},JSON.parse(t))}catch(e){}res()})}
-  function persist(){clearTimeout(saveT);saveT=setTimeout(function(){
-    if(idb){try{idb.transaction('kv','readwrite').objectStore('kv').put(JSON.parse(JSON.stringify(state)),KEY);return}catch(e){}}
-    try{localStorage.setItem(DB_NAME,JSON.stringify(state))}catch(e){}},50)}
-  function flush(){clearTimeout(saveT);if(idb){try{idb.transaction('kv','readwrite').objectStore('kv').put(JSON.parse(JSON.stringify(state)),KEY)}catch(e){}}}
-  function snapOf(name,order,lim){var o=state[name],arr=Object.keys(o).map(function(id){return {id:id,_d:o[id]}});
-    if(order)arr.sort(function(a,b){var x=a._d[order.f],y=b._d[order.f];return order.dir==='desc'?(y>x?1:y<x?-1:0):(x>y?1:x<y?-1:0)});
-    if(lim)arr=arr.slice(0,lim);return {docs:arr.map(function(d){return {id:d.id,data:function(){return JSON.parse(JSON.stringify(d._d))}}})}}
-  function notify(name){subs.forEach(function(s){if(s.name===name)s.fn(snapOf(name,s.order,s.lim))})}
-  function coll(name,order,lim){return {
-    add:async function(data){var id=rid();state[name][id]=JSON.parse(JSON.stringify(data));persist();notify(name);return {id:id}},
-    orderBy:function(f,dir){return coll(name,{f:f,dir:dir||'asc'},lim)},limit:function(n){return coll(name,order,n)},
-    onSnapshot:function(fn){var s={name:name,order:order,lim:lim,fn:fn};subs.push(s);setTimeout(function(){fn(snapOf(name,order,lim))},0);return function(){subs=subs.filter(function(x){return x!==s})}}}}
-  function doc(path){var p=path.split('/'),name=p[0],id=p.slice(1).join('/');return {
-    set:async function(d){state[name][id]=JSON.parse(JSON.stringify(d));persist();notify(name)},
-    update:async function(d){state[name][id]=Object.assign({},state[name][id]||{},JSON.parse(JSON.stringify(d)));persist();notify(name)},
-    delete:async function(){delete state[name][id];persist();notify(name)},
-    get:async function(){var v=state[name][id];return {exists:!!v,id:id,data:function(){return v}}}}}
-  function effect(m){if(!m||m.anulado)return 0;return m.tipo==='ENTRADAS'?+m.cantidad||0:-(+m.cantidad||0)}
-  /* Fusiona un archivo de copia: suma movimientos que faltan y ajusta el stock sin duplicar nada. */
-  function merge(data){
-    var rep={movNuevos:0,movAnulados:0,lotesNuevos:0,botes:0};
-    var L=state.lotes,M=state.movimientos,Rm=data.movimientos||{},Rl=data.lotes||{},Rb=data.botes||{},delta={},id,m,lid;
-    function lotOf(m){return m.loteDoc||String(m.loteInterno||'').replace(/[^A-Za-z0-9_\-.~:@+]/g,'_')}
-    for(id in Rm){m=Rm[id];lid=lotOf(m);
-      if(!M[id]){M[id]=m;rep.movNuevos++;
-        /* movimiento nuevo: su efecto cuenta, salvo que el lote venga ya con su stock en el archivo (se resuelve abajo) */
-        (delta[lid]=delta[lid]||[]).push({id:id,nuevo:true,e:effect(m)})}
-      else if(m.anulado&&!M[id].anulado){var antes=effect(M[id]);M[id].anulado=true;rep.movAnulados++;(delta[lid]=delta[lid]||[]).push({id:id,e:-antes})}}
-    for(lid in Rl){
-      if(!L[lid]){
-        /* lote que no tenía: parto del stock del archivo (ya incluye los movimientos de ese dispositivo) */
-        var skip=false;for(id in M){if(M[id].tipo==='ENTRADAS'&&M[id].anulado&&lotOf(M[id])===lid)skip=true}
-        if(skip)continue;
-        L[lid]=Object.assign({},Rl[lid]);rep.lotesNuevos++;delete delta[lid]}
-    }
-    for(lid in delta){if(!L[lid])continue;var add=0;delta[lid].forEach(function(x){add+=x.e});L[lid].stock=Math.round((L[lid].stock+add)*100)/100}
-    for(id in Rb){var b=Rb[id];if(!state.botes[id]||(b.upd||0)>(state.botes[id].upd||0)){state.botes[id]=b;rep.botes++}}
-    persist();notify('lotes');notify('movimientos');notify('botes');return rep}
-  /* Carga de stock desde el Excel: sustituye los lotes, conserva el historial */
-  function cargar(lotes){var n=0;state.lotes={};lotes.forEach(function(l){var id=l.id||String(l.lote).replace(/[^A-Za-z0-9_\-.~:@+]/g,'_');var d=Object.assign({},l);delete d.id;state.lotes[id]=d;n++});persist();notify('lotes');return n}
-  function exportar(){return {app:'control-lotes',version:1,creado:new Date().toISOString(),lotes:state.lotes,movimientos:state.movimientos,botes:state.botes}}
-  function vacio(){return !Object.keys(state.lotes).length}
-  return {init:async function(){await openIdb();await load()},api:{doc:doc,collection:function(n){return coll(n)}},merge:merge,cargar:cargar,exportar:exportar,vacio:vacio,flush:flush}})();
-window.LocalDB=LocalDB;
-
 var MESES=Object.assign({VINYL:6,UVXCEL:12,UVM277:12},CAT.meses);
 var CLIENTES=Object.keys(CAT.prefijos);
 var ALIAS={'SUN CHEMICAL':['sun chemical','sunchemical','sun'],'SIEGWERK':['siegwerk','sigwerk','siegwer','sie'],'SAKATA':['sakata','sak'],
@@ -409,7 +385,7 @@ var ALIAS={'SUN CHEMICAL':['sun chemical','sunchemical','sun'],'SIEGWERK':['sieg
  'CROMACOLOR':['cromacolor','croma color'],'WEIBULGER':['weibulger'],'ASG':['asg']};
 
 var S={tab:'registrar',modo:'salida',db:null,dl:null,ready:false,lotes:new Map(),byKey:new Map(),movs:[],
-  rows:[],ent:{},entManual:{},filtro:'todos',q:'',botes:{},scan:null,etq:{},etqQ:'',etqSize:'m'};
+  rows:[],ent:{},entManual:{},filtro:'todos',q:'',botes:{},scan:null,etq:{},etqQ:'',etqSize:'m',semanas:[],semReady:false,sem:null,ens:null,wq:''};
 
 /* ---------- utilidades ---------- */
 var $=function(s){return document.querySelector(s)};
@@ -466,34 +442,9 @@ function nextLI(cliente,fecha){
   return pre+yy+'-'+(mx+1)}
 
 /* ================= INTERPRETAR: SALIDAS ================= */
-/* Lenguaje hablado: nombres de proveedor -> prefijo, y números dichos con palabras -> cifras */
-var NU={uno:1,una:1,un:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,dieciseis:16,diecisiete:17,dieciocho:18,diecinueve:19,veinte:20,veintiuno:21,veintiun:21,veintiuna:21,veintidos:22,veintitres:23,veinticuatro:24,veinticinco:25,veintiseis:26,veintisiete:27,veintiocho:28,veintinueve:29,treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90,cien:100,ciento:100,doscientos:200,trescientos:300,cuatrocientos:400,quinientos:500,seiscientos:600,setecientos:700,ochocientos:800,novecientos:900};
-function palabrasANum(t){
-  var tk=t.split(/\s+/),out=[],i=0;
-  while(i<tk.length){
-    if(!(tk[i] in NU)&&tk[i]!=='mil'){out.push(tk[i]);i++;continue}
-    var tot=0,cur=0,j=i,any=false;
-    while(j<tk.length){var w=tk[j],v=NU[w];
-      if(w==='mil'){tot+=(cur||1)*1000;cur=0;any=true;j++;continue}
-      if(v===undefined){
-        if(w==='y'&&any&&cur%100>=30&&cur%10===0&&NU[tk[j+1]]>=1&&NU[tk[j+1]]<=9){cur+=NU[tk[j+1]];j+=2;continue}
-        break}
-      if(v>=100){if(cur%1000>=100)break;cur+=v}
-      else if(v>=20&&v%10===0){if(cur%100!==0)break;cur+=v}
-      else{if(cur%100!==0)break;cur+=v}
-      any=true;j++}
-    if(!any||j===i){out.push(tk[i]);i++}else{out.push(String(tot+cur));i=j}}
-  return out.join(' ')}
-function habla(t){
-  t=t.replace(/\b(sun\s*chemical|sunchemical)\b/g,'sun ').replace(/\b(sigwerk|siegwerk|zigwerk|sigverk|siegwer)\b/g,'sie ').replace(/\bsakata\b/g,'sak ')
-    .replace(/\b(druck and chemie|druck|druk|drug)\b/g,'dru ').replace(/\bcarbonell\b/g,'car ').replace(/\bheidelberg\b/g,'hei ')
-    .replace(/\b(cromacolor|croma color)\b/g,'cro ').replace(/\b(weibulger|weilburger)\b/g,'wei ').replace(/\b(son|sum|san|zun|sunn)(?=[\s.,\-]+\d)/g,'sun');
-  return palabrasANum(t)}
-
-
 var PREFS=Object.keys(CAT.prefijos).map(function(k){return CAT.prefijos[k].toLowerCase()}).join('|');
 function parseSalida(raw){
-  var t=habla(nz(raw)).replace(/\b(guion|barra|menos)\b/g,'-'),re=new RegExp('\\b('+PREFS+')[\\s.,\\-\\/]*(\\d{2})[\\s.,\\-\\/]*(\\d{1,3})\\b','g'),ms=[],m;
+  var t=nz(raw).replace(/\b(guion|barra|menos)\b/g,'-'),re=new RegExp('\\b('+PREFS+')[\\s.\\-\\/]*(\\d{2})[\\s.\\-\\/]*(\\d{1,3})\\b','g'),ms=[],m;
   while((m=re.exec(t)))ms.push({pre:m[1],yy:m[2],n:m[3],i:m.index,e:m.index+m[0].length});
   var rows=[];
   ms.forEach(function(x,idx){
@@ -592,7 +543,7 @@ function updateSave(){
     if(c.err){bad=true;return}
     if(seen[r.lotId]){bad=true;msgs.push('<div class="msg bad">El lote '+esc(c.lot.lote)+' aparece dos veces.</div>');return}
     seen[r.lotId]=1;if(c.sale>0)ok++});
-  if(!S.db)msgs.push('<div class="msg bad">No se puede guardar en este navegador.</div>');
+  if(!S.db)msgs.push('<div class="msg bad">No hay conexión con la base de datos. Abre la página con tu sesión de Claude para guardar.</div>');
   $('#s-msgs').innerHTML=msgs.join('');
   var b=$('#btn-save-s');b.disabled=!S.db||bad||ok===0;
   b.textContent=ok>1?'Guardar '+ok+' salidas':'Guardar salida'}
@@ -604,7 +555,7 @@ async function guardarSalidas(){
     for(var i=0;i<S.rows.length;i++){
       var r=S.rows[i],c=calcRow(r);if(c.err||c.sale<=0)continue;
       var lot=c.lot;
-      await S.db.doc('lotes/'+lot.id).update({stock:c.nuevo});
+      await S.db.doc('lotes/'+lot.id).update(stockPatch(lot,c.nuevo,fecha));
       await S.db.collection('movimientos').add({tipo:'SALIDAS',fecha:fecha,cliente:lot.cliente,articulo:lot.articulo,marca:lot.marca,tipoTinta:lot.tipo||'',
         loteInterno:lot.lote,loteProv:'',albaran:alb,cantidad:c.sale,stockAntes:c.prev,stockDespues:c.nuevo,cad:lot.cad||null,creado:Date.now(),exportado:false,anulado:false,modo:r.modo});
       n++}
@@ -659,7 +610,7 @@ function validateEnt(){
 
 async function guardarEntrada(){
   var e=S.ent,b=$('#btn-save-e');b.disabled=true;
-  var lot={lote:e.li,cliente:e.cliente,articulo:e.articulo,marca:e.marca||'',tipo:e.tipo||'',fecha:e.fecha,cad:e.cad,stock:e.cant,inicial:e.cant};
+  var lot={lote:e.li,cliente:e.cliente,articulo:e.articulo,marca:e.marca||'',tipo:e.tipo||'',fecha:e.fecha,cad:e.cad,stock:e.cant,inicial:e.cant,loteProv:e.lote||'',albaran:e.albaran||''};
   try{
     await S.db.doc('lotes/'+docId(e.li)).set(lot);
     await S.db.collection('movimientos').add({tipo:'ENTRADAS',fecha:e.fecha,cliente:e.cliente,articulo:e.articulo,marca:e.marca||'',tipoTinta:e.tipo||'',
@@ -682,7 +633,7 @@ function renderStock(){
   list.sort(function(a,b){var da=a.cad?daysTo(a.cad):1e9,db=b.cad?daysTo(b.cad):1e9;return da-db});
   var host=$('#stocklist');
   if(!S.ready){host.innerHTML='<div class="empty">Cargando…</div>';return}
-  if(!all.length){host.innerHTML='<div class="empty"><h3>Todavía no hay stock cargado</h3><p style="margin:0">Ve a Historial → «Importar datos» y elige el archivo de datos iniciales.</p></div>';return}
+  if(!all.length){host.innerHTML='<div class="empty"><h3>Todavía no hay stock cargado</h3><p style="margin:0">Cuando se cargue el stock de tu Excel, aparecerán aquí los lotes con su caducidad.</p></div>';return}
   if(!list.length){host.innerHTML='<div class="empty">Ningún lote coincide.</div>';return}
   host.innerHTML=list.map(function(l){var e=estadoCad(l);
     return '<div class="item"><div class="a"><b class="mono">'+esc(l.lote)+'</b><small>'+esc(l.articulo)+' · '+esc(l.marca)+'</small></div>'+
@@ -740,23 +691,6 @@ async function descargarPdfStock(){
   var d=new Date(),f=('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
   try{await S.dl.save({filename:'stock-revision-'+today()+'.pdf',data:buildPdf(rows,f)});toast('PDF descargado')}
   catch(e){if(!e||e.code!=='declined')toast('No se pudo descargar: '+(e&&e.message||e))}}
-
-/* ================= SINCRONIZAR (exportar / importar datos) ================= */
-async function exportarDatos(){
-  var d=new Date(),p=function(n){return ('0'+n).slice(-2)},f='lotes-'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+'.json';
-  try{await S.dl.save({filename:f,data:JSON.stringify(LocalDB.exportar())});localStorage.setItem('ultimaCopia',d.toISOString());toast('Datos exportados');infoCopia()}
-  catch(e){toast('No se pudo exportar: '+(e&&e.message||e))}}
-function infoCopia(){var t='';try{t=localStorage.getItem('ultimaCopia')}catch(e){}$('#bk-info').textContent=t?'Última exportación: '+new Date(t).toLocaleString('es-ES'):'Todavía no has exportado datos desde este dispositivo.'}
-async function importarDatos(){
-  var f=this.files&&this.files[0];this.value='';if(!f)return;
-  try{var d=JSON.parse(await f.text());
-    if(!d||d.app!=='control-lotes')throw new Error('Ese archivo no es de Control de Lotes.');
-    if(d.tipo==='carga-stock'){
-      if(!confirm('Esto sustituye el stock actual ('+S.lotes.size+' lotes) por el del archivo ('+(d.lotes||[]).length+' lotes). El historial se conserva. ¿Continuar?'))return;
-      var n=LocalDB.cargar(d.lotes||[]);toast('Stock cargado: '+n+' lotes');return}
-    var r=LocalDB.merge(d);
-    toast('Importado: '+r.movNuevos+' movimientos nuevos, '+r.lotesNuevos+' lotes nuevos'+(r.movAnulados?', '+r.movAnulados+' anulados':''))}
-  catch(e){toast(e&&e.message||'No se pudo importar el archivo.')}}
 
 /* ================= HISTORIAL / EXPORTAR ================= */
 function renderHist(){
@@ -863,12 +797,12 @@ var botesKey=function(a,m){return cp((a||'')+'_'+(m||''))||'x'};
 var boteDe=function(l){return S.botes[botesKey(l.articulo,l.marca)]||0};
 async function guardarBote(l,qty){
   S.botes[botesKey(l.articulo,l.marca)]=qty;
-  await S.db.doc('botes/'+botesKey(l.articulo,l.marca)).set({qty:qty,articulo:l.articulo,marca:l.marca,upd:Date.now()})}
+  await S.db.doc('botes/'+botesKey(l.articulo,l.marca)).set({qty:qty,articulo:l.articulo,marca:l.marca})}
 function copiasPorDefecto(l){var b=boteDe(l);return b>0?Math.max(1,Math.min(200,Math.ceil(l.stock/b))):1}
 
 async function descontarLote(lot,cant,modo){
   var fecha=today(),prev=lot.stock,nuevo=prev-cant;
-  await S.db.doc('lotes/'+lot.id).update({stock:nuevo});
+  await S.db.doc('lotes/'+lot.id).update(stockPatch(lot,nuevo,fecha));
   var ref=await S.db.collection('movimientos').add({tipo:'SALIDAS',fecha:fecha,cliente:lot.cliente,articulo:lot.articulo,marca:lot.marca,tipoTinta:lot.tipo||'',
     loteInterno:lot.lote,loteProv:'',albaran:albaranSem(fecha),cantidad:cant,stockAntes:prev,stockDespues:nuevo,cad:lot.cad||null,creado:Date.now(),exportado:false,anulado:false,modo:modo});
   return ref.id}
@@ -879,9 +813,10 @@ function lotFromHash(h){
 
 function handleHash(){
   var h='';try{h=decodeURIComponent((location.hash||'').replace(/^#/,''))}catch(e){}
-  if(h&&/^[A-Za-z0-9._~\-]+$/.test(h)){S.scan={id:h,qty:null,done:null,editBote:false,busy:false}}
-  else if(!h){S.scan=null}
-  applyView();renderScan()}
+  if(/^sem-[A-Za-z0-9]+$/i.test(h)){S.ens=h.slice(4).toUpperCase();S.scan=null}
+  else if(h&&/^[A-Za-z0-9._~\-]+$/.test(h)){S.ens=null;S.scan={id:h,qty:null,done:null,editBote:false,busy:false}}
+  else if(!h){S.scan=null;S.ens=null}
+  applyView();renderScan();renderEnsayo()}
 
 function scanCalc(lot){
   var q=S.scan.qty;
@@ -902,7 +837,7 @@ function updateScanCalc(){
 function renderScan(){
   var host=$('#v-scan');if(!S.scan){host.innerHTML='';return}
   if(!S.ready){host.innerHTML='<div class="empty"><h3>Abriendo el lote…</h3></div>';return}
-  var sc=S.scan,close='<div class="row"><button class="ghost" id="sc-rescan" type="button">Escanear otro QR</button><button class="ghost" id="sc-close">Abrir la app completa</button></div>';
+  var sc=S.scan,close='<div class="row"><label class="lblbtn gho" for="scan-file">Escanear otro QR</label><button class="ghost" id="sc-close">Abrir la app completa</button></div>';
   if(sc.done){
     host.innerHTML='<div class="card"><div class="msg ok" style="font-size:1.05rem"><b>Descontado '+fmt(sc.done.cant)+'</b> del lote <span class="mono">'+esc(sc.done.lote)+'</span>. Queda <b>'+fmt(sc.done.nuevo)+'</b>.</div>'+
       '<div class="row"><button class="ghost" id="sc-undo">Deshacer</button><button class="ghost" id="sc-again">Descontar otro bote</button></div>'+close+'</div>';return}
@@ -948,7 +883,6 @@ function bindScan(){
   h.addEventListener('click',function(ev){
     var b=ev.target.closest('button');if(!b||!S.scan)return;var sc=S.scan,lot=lotFromHash(sc.id),bote=lot?boteDe(lot):0;
     switch(b.id){
-      case 'sc-rescan':liveStart();return;
       case 'sc-close':scanClose();return;
       case 'sc-go':scanGo();return;
       case 'sc-undo':scanUndo();return;
@@ -1050,57 +984,37 @@ async function leerQr(file){
   if(!text)throw new Error('No he podido leer el QR. Acércate, enfócalo y que quede centrado.');
   return text}
 
-function aplicarQr(t){
-  var m=/#([A-Za-z0-9._~\-]+)\s*$/.exec(t),id=m?m[1]:String(t).trim();
-  if(!/^[A-Za-z0-9._~\-]+$/.test(id))throw new Error('Ese QR no es de un lote de esta app.');
-  S.scan={id:id,qty:null,done:null,editBote:false,busy:false};applyView();renderScan();window.scrollTo(0,0)}
 async function onScanFile(){
   var f=this.files&&this.files[0];this.value='';if(!f)return;
   toast('Leyendo QR…');
-  try{aplicarQr(await leerQr(f))}
+  try{
+    var t=await leerQr(f),mx=/^ARTX;([0-9]{2}SEM[0-9]{1,2})\b/i.exec(t);
+    if(mx){abrirEnsayo(mx[1].toUpperCase());return}
+    var m=/#([A-Za-z0-9._~\-]+)\s*$/.exec(t),id=m?m[1]:t.trim();
+    if(!/^[A-Za-z0-9._~\-]+$/.test(id))throw new Error('Ese QR no es de un lote de esta app.');
+    if(/^sem-/i.test(id)){abrirEnsayo(id.slice(4).toUpperCase())}else{S.ens=null;S.scan={id:id,qty:null,done:null,editBote:false,busy:false};applyView();renderScan();window.scrollTo(0,0)}}
   catch(e){toast(e&&e.message||'No se pudo leer el QR.')}}
-var Live={stream:null,timer:0,on:false};
-function liveStop(){Live.on=false;clearTimeout(Live.timer);if(Live.stream){Live.stream.getTracks().forEach(function(t){t.stop()});Live.stream=null}$('#live').hidden=true;$('#live-video').srcObject=null}
-async function liveStart(){
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('Este navegador no permite usar la cámara aquí. Usa «Hacer foto al QR».');return}
-  var ov=$('#live'),vd=$('#live-video'),msg=$('#live-msg');ov.hidden=false;msg.textContent='Abriendo la cámara…';
-  try{Live.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false})}
-  catch(e){liveStop();toast('No se pudo abrir la cámara. Revisa el permiso del navegador o usa «Hacer foto al QR».');return}
-  vd.srcObject=Live.stream;try{await vd.play()}catch(e){}
-  var det=null;if('BarcodeDetector' in window){try{det=new BarcodeDetector({formats:['qr_code']})}catch(e){det=null}}
-  if(!det){try{await loadJsQR()}catch(e){liveStop();toast(e.message);return}}
-  var cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
-  Live.on=true;msg.textContent='Apunta al QR del bote';
-  (function tick(){if(!Live.on)return;
-    Promise.resolve().then(async function(){
-      if(vd.readyState<2)return null;
-      if(det){var r=await det.detect(vd);return r&&r[0]?r[0].rawValue:null}
-      var w=vd.videoWidth,h=vd.videoHeight;if(!w)return null;var sc=Math.min(1,720/w);cv.width=Math.round(w*sc);cv.height=Math.round(h*sc);
-      cx.drawImage(vd,0,0,cv.width,cv.height);var im=cx.getImageData(0,0,cv.width,cv.height),q=window.jsQR(im.data,cv.width,cv.height,{inversionAttempts:'attemptBoth'});return q?q.data:null})
-    .then(function(t){if(!Live.on)return;
-      if(t){try{aplicarQr(t);liveStop();if(navigator.vibrate)navigator.vibrate(60);return}catch(e){msg.textContent=e.message}}
-      Live.timer=setTimeout(tick,140)})
-    .catch(function(){if(Live.on)Live.timer=setTimeout(tick,300)})})()}
 
 function refreshViews(){
   var ae=document.activeElement,typing=ae&&ae.tagName==='INPUT'&&ae.type!=='checkbox';
   if(S.scan){if(typing&&$('#sc-qty'))updateScanCalc();else renderScan();return}
   if(S.tab==='stock')renderStock();
   if(S.tab==='historial')renderHist();
-  if(S.tab==='etiquetas'&&!typing)renderEtiquetas()}
+  if(S.tab==='etiquetas'&&!typing)renderEtiquetas();
+  if(S.ens){if(!typing)renderEnsayo()}else if(S.tab==='semana'&&!typing)renderSemana()}
 
 /* ================= navegación y eventos ================= */
 function applyView(){
   var sc=!!S.scan;
-  document.querySelector('.tabs').style.display=sc?'none':'';
+  var en=!!S.ens&&!sc;document.querySelector('.tabs').style.display=(sc||en)?'none':'';$('#v-ensayo').style.display=en?'flex':'none';
   $('#v-scan').style.display=sc?'flex':'none';
-  $('#scanbar').style.display=sc?'none':'';
-  ['registrar','stock','historial','etiquetas'].forEach(function(k){$('#v-'+k).style.display=(!sc&&k===S.tab)?'flex':'none'})}
+  $('#scanbar').style.display=(sc||en)?'none':'';
+  ['registrar','stock','historial','etiquetas','semana'].forEach(function(k){$('#v-'+k).style.display=(!sc&&!en&&k===S.tab)?'flex':'none'})}
 function setTab(t){
   S.tab=t;
   document.querySelectorAll('.tabs button').forEach(function(b){b.setAttribute('aria-selected',String(b.dataset.tab===t))});
   applyView();
-  if(t==='stock')renderStock();if(t==='historial')renderHist();if(t==='etiquetas')renderEtiquetas()}
+  if(t==='stock')renderStock();if(t==='historial')renderHist();if(t==='etiquetas')renderEtiquetas();if(t==='semana')renderSemana()}
 
 function setModo(m){
   S.modo=m;
@@ -1111,17 +1025,6 @@ function setModo(m){
   $('#hint-dictado').innerHTML=m==='salida'?'Di primero el lote interno y después el <b>stock que queda</b>; la app calcula lo que ha salido. Puedes encadenar varios lotes.':'Di cliente, artículo, cantidad, albarán y lote del proveedor. El lote interno y la caducidad se calculan solos.';
   if(m==='entrada'&&!S.ent.fecha){S.ent={fecha:today()};fillEntForm()}}
 
-var Dic={rec:null};
-function dictar(){
-  var SR=window.SpeechRecognition||window.webkitSpeechRecognition,b=$('#btn-mic'),h=$('#hint-dictado');
-  if(!SR){toast('Este navegador no tiene dictado. Usa el micrófono del teclado del móvil.');return}
-  if(Dic.rec){Dic.rec.stop();return}
-  var r=new SR(),base=$('#dictado').value.trim(),got='';r.lang='es-ES';r.interimResults=true;r.continuous=false;Dic.rec=r;
-  b.textContent='⏹ Parar';b.classList.add('rec');h.textContent='Escuchando… di el lote y el stock que queda.';
-  r.onresult=function(e){var s='';for(var i=0;i<e.results.length;i++)s+=e.results[i][0].transcript;got=s;$('#dictado').value=(base?base+' ':'')+s};
-  r.onerror=function(e){var m={'not-allowed':'Permite el micrófono para esta página en Chrome.','service-not-allowed':'Permite el micrófono para esta página en Chrome.','network':'El dictado necesita conexión a internet.','no-speech':'No he oído nada. Prueba otra vez.','audio-capture':'No encuentro el micrófono.'};toast(m[e.error]||('No se pudo dictar ('+e.error+').'))};
-  r.onend=function(){Dic.rec=null;b.textContent='🎤 Dictar';b.classList.remove('rec');if(got)interpretar()};
-  try{r.start()}catch(e){Dic.rec=null;b.textContent='🎤 Dictar';toast('No se pudo iniciar el dictado.')}}
 function interpretar(){
   var raw=$('#dictado').value.trim();if(!raw)return;
   var t=nz(raw);
@@ -1145,7 +1048,7 @@ function interpretar(){
 function bind(){
   document.querySelectorAll('.tabs button').forEach(function(b){b.addEventListener('click',function(){setTab(b.dataset.tab)})});
   document.querySelectorAll('.seg button').forEach(function(b){b.addEventListener('click',function(){setModo(b.dataset.modo)})});
-  $('#btn-interp').addEventListener('click',interpretar);$('#btn-mic').addEventListener('click',dictar);
+  $('#btn-interp').addEventListener('click',interpretar);
   $('#dictado').addEventListener('keydown',function(e){if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();interpretar()}});
   $('#btn-limpiar').addEventListener('click',function(){$('#dictado').value='';$('#hint-dictado').innerHTML='';if(S.modo==='salida'){S.rows=[];renderRows()}else{S.ent={fecha:today()};S.entManual={};fillEntForm()}});
   $('#btn-addrow').addEventListener('click',function(){S.rows.push({lotId:null,texto:'',modo:'recuento',val:null});renderRows()});
@@ -1153,7 +1056,6 @@ function bind(){
   $('#btn-save-e').addEventListener('click',guardarEntrada);
   $('#btn-export').addEventListener('click',exportar);
   $('#btn-pdf').addEventListener('click',descargarPdfStock);
-  $('#btn-bk-exp').addEventListener('click',exportarDatos);$('#bk-file').addEventListener('change',importarDatos);
   $('#s-fecha').addEventListener('change',function(){$('#s-albaran').value=albaranSem($('#s-fecha').value||today())});
   var rows=$('#rows');
   rows.addEventListener('input',function(e){var el=e.target;if(el.dataset.k==='val'){var i=+el.dataset.i,v=el.value.trim();
@@ -1175,8 +1077,7 @@ function bind(){
       if(k==='articulo'||k==='marca'){var c=CAT.combos.find(function(x){return (!S.ent.cliente||x.c===S.ent.cliente)&&((k==='articulo'&&x.a===v)||(k==='marca'&&x.m===v))});
         if(c){if(k==='articulo'&&!S.ent.marca){S.ent.marca=c.m;$('#e-marca').value=c.m}if(!S.ent.tipo&&c.t){S.ent.tipo=c.t;$('#e-tipo').value=c.t}}}}
     if(k==='fecha'||k==='marca'||k==='articulo'||k==='cliente')autoEnt();else{updateCadHint();validateEnt()}})});
-  bindScan();bindEtq();
-  $('#btn-scan').addEventListener('click',liveStart);$('#live-close').addEventListener('click',liveStop);
+  bindScan();bindEtq();bindSemana();
   $('#scan-file').addEventListener('change',onScanFile);
   $('#scan-gal').addEventListener('change',onScanFile);
   /* stock */
@@ -1194,6 +1095,305 @@ function bind(){
   $('#lote-in').addEventListener('keydown',function(e){if(e.key==='Enter')$('#lote-go').click()});
   $('#histlist').addEventListener('click',function(e){var b=e.target.closest('button[data-anu]');if(b)anular(b.dataset.anu)})}
 
+/* ================= SEMANA: etiqueta semanal y ensayo de trazabilidad ================= */
+var ZONAS=[{k:'blanco',n:'BLANCO'},{k:'osf',n:'OSF · B C M Y'},{k:'oros',n:'OROS'},{k:'iso',n:'ISO · DH'},{k:'p877',n:'877'}];
+var uni=function(l){return l&&l.cliente==='DRUCK AND CHEMIE'?'L':'g'};
+function zonaDe(l){
+  var a=String(l.articulo||'').toUpperCase(),m=String(l.marca||'').toUpperCase(),c=String(l.cliente||'').toUpperCase();
+  if(c==='DRUCK AND CHEMIE')return 'iso';
+  if(c==='ASG'||/^ORO\b/.test(a))return 'oros';
+  if(/BLANCO/.test(a))return 'blanco';
+  if(/\b877\b/.test(a))return 'p877';
+  if(m==='OSF')return 'osf';
+  return null}
+/* al sacar por primera vez de un lote sin abrir, se anota el inicio de uso */
+function stockPatch(lot,nuevo,fecha){var p={stock:nuevo};if(!lot.inicioUso&&+lot.inicial>0&&+lot.stock>=+lot.inicial)p.inicioUso=fecha;return p}
+function newSem(id){return {id:id,sel:{},det:{},zona:{},snap:{},open:{},showAll:{},loaded:false}}
+function semNorm(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'')}
+function semKey(id){var m=/^(\d{2})SEM(\d{1,2})$/.exec(id);return m?(+m[1])*100+(+m[2]):0}
+function semFin(id){var m=/^(\d{2})SEM(\d{1,2})$/.exec(id);if(!m)return '';
+  var y=2000+Number(m[1]),j4=new Date(y,0,4),dow=(j4.getDay()+6)%7,mon=new Date(y,0,4-dow+(Number(m[2])-1)*7);mon.setDate(mon.getDate()+6);return iso(mon)}
+
+/* datos de trazabilidad que ya se conocen de un lote (entradas y primera salida del bote) */
+function movInfo(l){
+  var o={loteProv:'',albaran:'',inicioUso:''},ini=+l.inicial||0;
+  S.movs.forEach(function(m){
+    if(m.anulado||m.loteInterno!==l.lote)return;
+    if(m.tipo==='ENTRADAS'){if(!o.loteProv)o.loteProv=m.loteProv||'';if(!o.albaran)o.albaran=m.albaran||''}
+    else if(m.tipo==='SALIDAS'&&m.fecha&&ini>0&&+m.stockAntes>=ini&&(!o.inicioUso||m.fecha<o.inicioUso))o.inicioUso=m.fecha});
+  return o}
+function detOf(e){
+  var d=S.sem.det[e.key]||{},l=e.lot,mv=e.gone?{}:movInfo(l);
+  return {loteProv:d.loteProv!=null?d.loteProv:(l.loteProv||mv.loteProv||''),
+    albaran:d.albaran!=null?d.albaran:(l.albaran||mv.albaran||''),
+    inicioUso:d.inicioUso!=null?d.inicioUso:(l.inicioUso||mv.inicioUso||'')}}
+
+function semEntries(){
+  var out=[];
+  S.lotes.forEach(function(l){
+    var k=S.sem.zona[l.id]||zonaDe(l);if(!k)return;
+    if(!(+l.stock>0)&&!S.sem.sel[l.id])return;
+    out.push({key:l.id,k:k,lot:l,gone:false})});
+  Object.keys(S.sem.snap).forEach(function(key){var s=S.sem.snap[key];out.push({key:key,k:s.k,lot:s.lot,gone:true})});
+  return out}
+function isMarked(e){return e.gone||!!S.sem.sel[e.key]}
+
+function semLoad(){
+  var sem=S.sem,doc=S.semanas.find(function(x){return x.semana===sem.id});
+  sem.loaded=true;
+  if(doc){
+    (doc.zonas||[]).forEach(function(z){(z.lotes||[]).forEach(function(s){
+      var l=S.byKey.get(lk(s.lote)),d={loteProv:s.loteProv||'',albaran:s.albaran||'',inicioUso:s.inicioUso||''};
+      if(l){sem.sel[l.id]=true;sem.zona[l.id]=z.k;sem.det[l.id]=d}
+      else{var key='snap:'+s.lote;sem.snap[key]={k:z.k,lot:s};sem.det[key]=d}})})}
+  else{S.lotes.forEach(function(l){if(zonaDe(l)&&+l.stock>0&&+l.inicial>0&&+l.stock<+l.inicial)sem.sel[l.id]=true})}}
+function semOpen(v){var id=semNorm(v);if(!id)return;S.sem=newSem(id);if(S.ready&&(S.semReady||!S.db))semLoad();renderSemana()}
+function semToggle(key,on){if(String(key).indexOf('snap:')===0){if(!on)delete S.sem.snap[key]}else S.sem.sel[key]=!!on;renderSemana()}
+function semAdd(k){
+  var inp=document.querySelector('[data-waddin="'+k+'"]'),v=inp&&inp.value.trim();if(!v)return;
+  var l=S.byKey.get(lk(v));if(!l){toast('No encuentro ese lote en el stock.');return}
+  S.sem.zona[l.id]=k;S.sem.sel[l.id]=true;S.sem.showAll[k]=true;renderSemana()}
+
+function semRow(e){
+  var sem=S.sem,l=e.lot,on=isMarked(e),d=detOf(e),st=estadoCad(l),open=!!sem.open[e.key];
+  var stock=e.gone?'ya sin stock':'stock '+fmt(l.stock)+' '+uni(l),na='<span class="na">sin dato</span>';
+  var h='<div class="zlot"><label class="chk"><input type="checkbox" data-wsel="'+esc(e.key)+'"'+(on?' checked':'')+'><span><b class="mono">'+esc(l.lote)+'</b> <small>'+esc(l.articulo)+' · '+esc(l.marca)+' · '+stock+'</small>'+
+    (on&&st.k==='venc'?' <span class="pill venc">Vencido</span>':'')+'</span></label>';
+  if(on){
+    h+='<div class="zsum hint"><span>Fab. <b>'+(d.loteProv?esc(d.loteProv):na)+'</b></span><span>Alb. <b>'+(d.albaran?esc(d.albaran):na)+'</b></span><span>Uso <b>'+(d.inicioUso?dmy(d.inicioUso):na)+'</b></span>'+
+      '<button class="link" data-wedit="'+esc(e.key)+'" style="padding:4px 6px">'+(open?'Cerrar':'Editar datos')+'</button></div>';
+    if(open){
+      var id0='wd-'+String(e.key).replace(/[^A-Za-z0-9_-]/g,'_'),k=esc(e.key);
+      h+='<div class="zdet">'+
+        '<div class="f"><label for="'+id0+'-p">Lote fabricante</label><input id="'+id0+'-p" class="mono" data-wdet="'+k+'|loteProv" value="'+esc(d.loteProv)+'" autocomplete="off"></div>'+
+        '<div class="f"><label for="'+id0+'-a">Albarán</label><input id="'+id0+'-a" class="mono" data-wdet="'+k+'|albaran" value="'+esc(d.albaran)+'" autocomplete="off"></div>'+
+        '<div class="f"><label for="'+id0+'-u">Inicio de uso</label><input type="date" id="'+id0+'-u" data-wdet="'+k+'|inicioUso" value="'+esc(d.inicioUso)+'"></div></div>'}}
+  return h+'</div>'}
+
+function renderSemana(){
+  var host=$('#w-zonas');if(!host)return;
+  if(!S.sem)S.sem=newSem(albaranSem(today()));
+  var sem=S.sem;
+  if(!sem.loaded&&S.ready&&(S.semReady||!S.db))semLoad();
+  var wi=$('#w-sem');if(document.activeElement!==wi)wi.value=sem.id;
+  renderSemanaList();
+  if(!S.ready){host.innerHTML='<div class="empty">Cargando…</div>';updateSemSave();return}
+  var ents=semEntries(),h='';
+  ZONAS.forEach(function(z){
+    var es=ents.filter(function(e){return e.k===z.k}).sort(function(a,b){return natKey(a.lot.lote,b.lot.lote)});
+    var marked=es.filter(isMarked),others=es.length-marked.length,show=sem.showAll[z.k]?es:marked;
+    h+='<div class="zona"><header><h3>'+esc(z.n)+'</h3><span class="hint">'+marked.length+(marked.length===1?' lote marcado':' lotes marcados')+'</span></header>';
+    h+=show.map(semRow).join('');
+    if(!show.length)h+='<p class="hint">Ningún lote marcado en esta zona.</p>';
+    if(others>0)h+='<button class="link" data-wall="'+z.k+'">'+(sem.showAll[z.k]?'Ocultar los no marcados':'Ver otros lotes de esta zona ('+others+')')+'</button>';
+    h+='<div class="row"><input class="mono" data-waddin="'+z.k+'" list="dl-lotes" placeholder="Añadir otro lote a esta zona" autocomplete="off" aria-label="Añadir otro lote a '+esc(z.n)+'" style="flex:1;min-width:0"><button class="ghost" data-wadd="'+z.k+'">Añadir</button></div></div>'});
+  host.innerHTML=h;updateSemSave()}
+
+function updateSemSave(){
+  var sem=S.sem,msgs=[],ents=(S.ready&&sem)?semEntries().filter(isMarked):[],miss=0,venc=0;
+  ents.forEach(function(e){var d=detOf(e);if(!d.loteProv||!d.albaran)miss++;if(estadoCad(e.lot).k==='venc')venc++});
+  var okId=!!sem&&/^\d{2}SEM\d{1,2}$/.test(sem.id);
+  if(!okId)msgs.push('<div class="msg bad">La semana tiene que ser como 26SEM47.</div>');
+  if(!S.db)msgs.push('<div class="msg bad">No hay conexión con la base de datos. Abre la página con tu sesión de Claude para guardar.</div>');
+  if(ents.length&&miss)msgs.push('<div class="msg warn">'+miss+(miss===1?' lote no tiene':' lotes no tienen')+' lote del fabricante o albarán. Puedes guardar y completarlos después.</div>');
+  if(venc)msgs.push('<div class="msg warn">'+venc+(venc===1?' lote marcado está vencido.':' lotes marcados están vencidos.')+'</div>');
+  $('#w-msgs').innerHTML=msgs.join('');
+  var b=$('#w-save');b.disabled=!S.db||!okId||!ents.length;
+  b.textContent=ents.length?'Guardar '+sem.id+' ('+ents.length+(ents.length===1?' lote)':' lotes)'):'Marca los lotes en uso'}
+
+function renderSemanaList(){
+  var host=$('#w-list');if(!host)return;
+  if(!S.ready){host.innerHTML='<div class="empty">Cargando…</div>';return}
+  var q=nz(S.wq||'').trim(),sem=S.semanas.slice().sort(function(a,b){return semKey(b.semana)-semKey(a.semana)});
+  if(q){
+    var hits=[];
+    sem.forEach(function(d){(d.zonas||[]).forEach(function(z){(z.lotes||[]).forEach(function(l){
+      if(nz([l.lote,l.articulo,l.marca,l.loteProv,l.albaran].join(' ')).indexOf(q)>=0)hits.push({d:d,z:z,l:l})})})});
+    host.innerHTML=hits.length?hits.map(function(h){
+      return '<div class="item"><div class="a"><b class="mono">'+esc(h.l.lote)+'</b><small>'+esc(h.z.n)+' · '+esc(h.l.articulo)+' · '+esc(h.l.marca)+'</small></div>'+
+        '<div class="q"><span class="num">'+esc(h.d.semana)+'</span></div>'+
+        '<div class="foot"><small style="color:var(--muted)">Fab. '+esc(h.l.loteProv||'sin dato')+' · Alb. '+esc(h.l.albaran||'sin dato')+'</small><button class="ghost" style="min-height:38px;padding:6px 12px" data-wver="'+esc(h.d.semana)+'">Ver ensayo</button></div></div>'}).join(''):
+      '<div class="empty">Ese lote no aparece en ninguna semana guardada.</div>';return}
+  if(!sem.length){host.innerHTML='<div class="empty"><h3>Todavía no hay semanas</h3><p style="margin:0">Marca los lotes en uso arriba y guarda la primera etiqueta.</p></div>';return}
+  host.innerHTML=sem.map(function(d){
+    var n=0;(d.zonas||[]).forEach(function(z){n+=(z.lotes||[]).length});
+    return '<div class="item"><div class="a"><b class="num" style="font-size:1.5rem;line-height:1.1">'+esc(d.semana)+'</b><small>'+n+(n===1?' lote':' lotes')+' · '+(d.zonas||[]).length+' zonas</small></div><div class="q"></div>'+
+      '<div class="foot"><button class="ghost" style="min-height:38px;padding:6px 12px" data-wver="'+esc(d.semana)+'">Ver ensayo</button><button class="ghost" style="min-height:38px;padding:6px 12px" data-wed="'+esc(d.semana)+'">Editar</button></div></div>'}).join('')}
+
+/* foto fija de la semana: lo que se guarda y lo que lleva la etiqueta */
+function semDoc(){
+  var sem=S.sem,ents=semEntries().filter(isMarked);
+  var zonas=ZONAS.map(function(z){
+    var ls=ents.filter(function(e){return e.k===z.k}).map(function(e){
+      var l=e.lot,d=detOf(e);
+      return {lote:l.lote,articulo:l.articulo||'',marca:l.marca||'',cliente:l.cliente||'',tipo:l.tipo||'',
+        loteProv:d.loteProv,albaran:d.albaran,inicial:l.inicial==null?null:Number(l.inicial),fecha:l.fecha||'',inicioUso:d.inicioUso,cad:l.cad||''}});
+    ls.sort(function(a,b){return natKey(a.lote,b.lote)});
+    return {k:z.k,n:z.n,lotes:ls}}).filter(function(z){return z.lotes.length});
+  return {semana:sem.id,zonas:zonas}}
+
+async function guardarSemana(){
+  var sem=S.sem,b=$('#w-save');
+  if(!S.db||!sem||!/^\d{2}SEM\d{1,2}$/.test(sem.id))return;
+  var ents=semEntries().filter(isMarked);if(!ents.length)return;
+  b.disabled=true;
+  try{
+    var doc=semDoc(),prev=S.semanas.find(function(x){return x.semana===sem.id}),now=Date.now();
+    doc.creado=prev&&prev.creado?prev.creado:now;doc.actualizado=now;
+    await S.db.doc('semanas/'+docId(sem.id)).set(doc);
+    doc.id=docId(sem.id);
+    S.semanas=S.semanas.filter(function(x){return x.id!==doc.id}).concat([doc]);
+    /* lo que se completa aquí queda en el lote para las próximas semanas */
+    for(var i=0;i<ents.length;i++){
+      var e=ents[i];if(e.gone)continue;
+      var l=e.lot,d=detOf(e),patch={};
+      if(d.loteProv&&d.loteProv!==(l.loteProv||''))patch.loteProv=d.loteProv;
+      if(d.albaran&&d.albaran!==(l.albaran||''))patch.albaran=d.albaran;
+      if(d.inicioUso&&d.inicioUso!==(l.inicioUso||''))patch.inicioUso=d.inicioUso;
+      if(Object.keys(patch).length)await S.db.doc('lotes/'+l.id).update(patch)}
+    toast('Semana '+sem.id+' guardada');
+    abrirEnsayo(sem.id);
+  }catch(err){toast('No se pudo guardar: '+(err&&err.message||err))}
+  updateSemSave()}
+
+/* ----- etiqueta (SVG de 105 × 68 mm) ----- */
+function qrPath(text){var q=QR.encode(text),n=q.size,d='',x,y;
+  for(y=0;y<n;y++)for(x=0;x<n;x++)if(q.modules[y][x])d+='M'+x+' '+y+'h1v1h-1z';
+  return {n:n,d:d}}
+function colorLetra(a){a=String(a||'').toUpperCase();return /CYAN/.test(a)?'C':/MAGENTA/.test(a)?'M':/YELLOW/.test(a)?'Y':/BLACK/.test(a)?'B':''}
+var ZCOD={blanco:'BL',osf:'OSF',oros:'OR',iso:'ISO',p877:'877'};
+/* Texto del QR: se lee con cualquier lector, sin la app. Ejemplo: ARTX;26SEM47;BL=SIE26-35,SUN24-48;OSF=SAK26-68,... */
+function qrTexto(d){
+  var t='ARTX;'+d.semana;
+  ZONAS.forEach(function(z){var zz=(d.zonas||[]).find(function(x){return x.k===z.k});
+    if(zz&&zz.lotes&&zz.lotes.length)t+=';'+ZCOD[z.k]+'='+zz.lotes.map(function(l){return l.lote}).join(',')});
+  return t}
+function etiquetaSvg(d){
+  var url=qrTexto(d),q=qrPath(url),t=q.n+6,tot=0,F='Arial,Helvetica,sans-serif',M="Consolas,'Courier New',monospace",por={};
+  (d.zonas||[]).forEach(function(z){por[z.k]=z.lotes||[];tot+=(z.lotes||[]).length});
+  var emit=d.actualizado||d.creado,s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 680" width="1050" height="680" font-family="'+F+'">';
+  s+='<rect x="0" y="0" width="1050" height="680" fill="#fff"/><rect x="5" y="5" width="1040" height="670" rx="26" fill="none" stroke="#000" stroke-width="6"/>';
+  s+='<text x="40" y="80" font-size="54" font-weight="700" letter-spacing="5">ARTEXIXONA</text>';
+  s+='<text x="42" y="120" font-size="25" letter-spacing="2">TRAZABILIDAD DE TINTAS</text>';
+  s+='<text x="38" y="222" font-size="108" font-weight="700">'+esc(d.semana)+'</text>';
+  s+='<text x="42" y="254" font-size="22">'+tot+(tot===1?' lote':' lotes')+(emit?' · emitida '+dmy(iso(new Date(emit))):'')+'</text>';
+  s+='<svg x="768" y="10" width="258" height="258" viewBox="-3 -3 '+t+' '+t+'" shape-rendering="crispEdges"><rect x="-3" y="-3" width="'+t+'" height="'+t+'" fill="#fff"/><path d="'+q.d+'" fill="#000"/></svg>';
+  s+='<path d="M24 274H1026" stroke="#000" stroke-width="3"/>';
+  var bw=326,bh=186,gap=12,x0=24,y0=284;
+  ZONAS.forEach(function(z,i){
+    var col=i%3,row=Math.floor(i/3),bx=x0+col*(bw+gap),by=y0+row*(bh+gap),ls=(por[z.k]||[]).slice();
+    if(z.k==='osf')ls.sort(function(a,b){var ia='BCMY'.indexOf(colorLetra(a.articulo)),ib='BCMY'.indexOf(colorLetra(b.articulo));return (ia<0?9:ia)-(ib<0?9:ib)||natKey(a.lote,b.lote)});
+    s+='<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="14" fill="none" stroke="#000" stroke-width="3"/>';
+    s+='<text x="'+(bx+16)+'" y="'+(by+34)+'" font-size="24" font-weight="700" letter-spacing="1">'+esc(z.n)+'</text>';
+    if(!ls.length){s+='<text x="'+(bx+16)+'" y="'+(by+88)+'" font-size="26" fill="#888">—</text>';return}
+    var cols=ls.length>5?2:1,per=Math.ceil(ls.length/cols),fs=Math.max(11,Math.min(cols===2?21:26,Math.floor(118/(per*1.22)))),cw=(bw-32)/cols;
+    ls.forEach(function(l,j){
+      var c=Math.floor(j/per),r=j%per,lt=z.k==='osf'?colorLetra(l.articulo):'',tx=(lt?lt+' ':'')+l.lote;
+      s+='<text x="'+(bx+16+c*cw).toFixed(1)+'" y="'+(by+52+fs+r*fs*1.22).toFixed(1)+'" font-family="'+M+'" font-size="'+fs+'" font-weight="700">'+esc(tx)+'</text>'})});
+  var nx=x0+2*(bw+gap),ny=y0+bh+gap;
+  s+='<rect x="'+nx+'" y="'+ny+'" width="'+bw+'" height="'+bh+'" rx="14" fill="none" stroke="#000" stroke-width="2" stroke-dasharray="8 6"/>';
+  ['El QR se lee con cualquier','lector y contiene la semana','y los lotes internos','de cada zona.'].forEach(function(t2,i){
+    s+='<text x="'+(nx+16)+'" y="'+(ny+44+i*30)+'" font-size="20">'+t2+'</text>'});
+  s+='<text x="'+(nx+16)+'" y="'+(ny+bh-18)+'" font-size="18" fill="#333">'+esc(d.semana)+' · trazabilidad operativa</text>';
+  return s+'</svg>'}
+function etiquetaHtml(d,n){
+  var sv=etiquetaSvg(d),b='',css='@page{size:105mm 68mm;margin:0}*{box-sizing:border-box}html,body{margin:0;background:#fff}.note{font:13px Arial;padding:10px 12px;color:#333;background:#eee}.l{width:105mm;height:68mm;break-after:page;page-break-after:always;overflow:hidden}.l:last-child{break-after:auto;page-break-after:auto}.l svg{width:105mm;height:68mm;display:block}@media screen{.l{margin:8px 12px;border:1px solid #ccc}}@media print{.note{display:none}}';
+  for(var i=0;i<n;i++)b+='<div class="l">'+sv+'</div>';
+  return '<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Etiqueta '+esc(d.semana)+'</title><style>'+css+'</style></head><body><div class="note">Imprime con Ctrl+P: tamaño de papel 105 × 68 mm, márgenes ninguno y escala 100 %. Sale una etiqueta por página.</div>'+b+'</body></html>'}
+async function svgToPng(svg,scale){
+  var img=new Image();img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  await img.decode();
+  var cv=document.createElement('canvas');cv.width=1050*scale;cv.height=680*scale;
+  var cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(img,0,0,cv.width,cv.height);
+  var blob=await new Promise(function(r){cv.toBlob(r,'image/png')});
+  return new Uint8Array(await blob.arrayBuffer())}
+
+/* ----- ensayo de trazabilidad ----- */
+var ENS_H=['SEMANA','ZONA','TINTA','MARCA','PROVEEDOR','LOTE INTERNO','LOTE FABRICANTE','ALBARAN','CANTIDAD ENTRADA','FECHA ENTRADA','INICIO USO','CADUCIDAD'];
+function ensDoc(){return S.semanas.find(function(x){return x.semana===S.ens})}
+function ensRows(d){var r=[];(d.zonas||[]).forEach(function(z){(z.lotes||[]).forEach(function(l){
+  r.push([d.semana,z.n,l.articulo,l.marca,l.cliente,l.lote,l.loteProv||'',l.albaran||'',l.inicial==null?'':l.inicial,l.fecha||'',l.inicioUso||'',l.cad||''])})});return r}
+function ensLot(l,fin){
+  var kv=function(t,x){return '<dt>'+t+'</dt>'+(x?'<dd>'+x+'</dd>':'<dd class="na">sin dato</dd>')};
+  var cad=l.cad?dmy(l.cad)+(fin&&l.cad<fin?' <span class="pill venc">Caducado esa semana</span>':''):'';
+  var ent=l.fecha?dmy(l.fecha)+(l.inicial!=null?' · '+fmt(l.inicial)+' '+uni(l):''):'';
+  return '<div class="zlot"><b class="mono" style="font-size:1.1rem">'+esc(l.lote)+'</b><dl class="kv">'+
+    kv('Tinta',esc((l.articulo||'')+(l.marca?' · '+l.marca:'')))+kv('Proveedor',esc(l.cliente||''))+kv('Lote fabricante',esc(l.loteProv||''))+
+    kv('Albarán',esc(l.albaran||''))+kv('Entrada',esc(ent))+kv('Inicio de uso',l.inicioUso?dmy(l.inicioUso):'')+kv('Caducidad',cad)+'</dl></div>'}
+function renderEnsayo(){
+  var host=$('#v-ensayo');if(!host)return;
+  if(!S.ens){host.innerHTML='';return}
+  var close='<button class="ghost" id="en-close">Abrir la app completa</button>';
+  if(!S.ready){host.innerHTML='<div class="empty"><h3>Abriendo la semana…</h3></div>';return}
+  var d=ensDoc();
+  if(!d){
+    host.innerHTML=(S.semReady||!S.db)?'<div class="card"><h3>Semana '+esc(S.ens)+'</h3><p class="hint">No hay datos guardados para esta semana.</p><div class="row">'+close+'</div></div>':'<div class="empty"><h3>Abriendo la semana…</h3></div>';return}
+  var tot=0,fin=semFin(d.semana);(d.zonas||[]).forEach(function(z){tot+=(z.lotes||[]).length});
+  var h='<div class="card"><div class="row" style="justify-content:space-between"><b class="num" style="font-size:2.3rem;line-height:1">'+esc(d.semana)+'</b><span class="hint">'+tot+(tot===1?' lote':' lotes')+' · '+(d.zonas||[]).length+' zonas</span></div>'+
+    '<div class="lblprev">'+etiquetaSvg(d)+'</div>'+
+    '<div class="row"><button class="primary" id="en-png">Descargar etiqueta PNG</button><button class="ghost" id="en-print">Imprimir</button><label class="copies" for="en-n">Copias <input id="en-n" type="number" min="1" max="24" inputmode="numeric" value="'+(S.ensN||2)+'"></label></div>'+
+    '<p class="hint">El PNG se pega directamente en la hoja de trabajo.</p>'+
+    '<div class="row"><button class="ghost" id="en-xls">Descargar Excel</button><button class="ghost" id="en-copy">Copiar datos</button><button class="ghost" id="en-edit">Editar semana</button></div>'+
+    '<div class="row"><label class="lblbtn gho" for="scan-file">Escanear otro QR</label>'+close+'</div></div>';
+  (d.zonas||[]).forEach(function(z){
+    h+='<div class="zona"><header><h3>'+esc(z.n)+'</h3><span class="hint">'+(z.lotes||[]).length+((z.lotes||[]).length===1?' lote':' lotes')+'</span></header>'+(z.lotes||[]).map(function(l){return ensLot(l,fin)}).join('')+'</div>'});
+  host.innerHTML=h}
+function abrirEnsayo(id){
+  S.ens=String(id).toUpperCase();S.scan=null;
+  try{history.replaceState(null,'','#sem-'+S.ens)}catch(e){}
+  applyView();renderEnsayo();window.scrollTo(0,0)}
+function cerrarEnsayo(){
+  S.ens=null;
+  try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+  applyView()}
+async function ensDescargar(kind,d){
+  if(!S.dl){toast('La descarga no está disponible en esta vista.');return}
+  try{
+    if(kind==='png'){await S.dl.save({filename:'etiqueta-'+d.semana+'.png',data:await svgToPng(etiquetaSvg(d),2)});toast('Etiqueta descargada')}
+    else if(kind==='print'){var n=Math.max(1,Math.min(24,parseInt(S.ensN,10)||2));await S.dl.save({filename:'etiquetas-'+d.semana+'.html',data:etiquetaHtml(d,n)});toast('Página de etiquetas descargada')}
+    else if(kind==='xls'){
+      var rows=ensRows(d).map(function(r){return r.map(function(v,i){return (i>=9&&/^\d{4}-\d{2}-\d{2}$/.test(v))?{d:v}:v})});
+      await S.dl.save({filename:'trazabilidad-'+d.semana+'.xlsx',data:buildXlsx([{name:'TRAZABILIDAD',header:ENS_H,rows:rows,widths:[10,16,22,16,18,14,20,16,16,14,14,14]}])});toast('Excel descargado')}
+  }catch(e){if(!e||e.code!=='declined')toast('No se pudo descargar: '+(e&&e.message||e))}}
+
+function bindSemana(){
+  $('#w-sem').addEventListener('change',function(){semOpen(this.value)});
+  var host=$('#w-zonas');
+  host.addEventListener('change',function(ev){
+    var el=ev.target;
+    if(el.dataset.wsel!=null){semToggle(el.dataset.wsel,el.checked);return}
+    if(el.dataset.wdet){
+      var v=el.dataset.wdet,i=v.lastIndexOf('|'),key=v.slice(0,i),f=v.slice(i+1),val=el.value.trim();
+      if(f!=='inicioUso')val=val.toUpperCase();
+      (S.sem.det[key]=S.sem.det[key]||{})[f]=val;renderSemana()}});
+  host.addEventListener('click',function(ev){
+    var b=ev.target.closest('button');if(!b)return;
+    if(b.dataset.wedit!=null){S.sem.open[b.dataset.wedit]=!S.sem.open[b.dataset.wedit];renderSemana()}
+    else if(b.dataset.wall){S.sem.showAll[b.dataset.wall]=!S.sem.showAll[b.dataset.wall];renderSemana()}
+    else if(b.dataset.wadd){semAdd(b.dataset.wadd)}});
+  host.addEventListener('keydown',function(ev){if(ev.key==='Enter'&&ev.target.dataset&&ev.target.dataset.waddin){ev.preventDefault();semAdd(ev.target.dataset.waddin)}});
+  $('#w-save').addEventListener('click',guardarSemana);
+  $('#w-q').addEventListener('input',function(){S.wq=this.value;renderSemanaList()});
+  $('#w-list').addEventListener('click',function(ev){
+    var b=ev.target.closest('button');if(!b)return;
+    if(b.dataset.wver)abrirEnsayo(b.dataset.wver);
+    else if(b.dataset.wed){semOpen(b.dataset.wed);window.scrollTo({top:0,behavior:'smooth'})}});
+  var en=$('#v-ensayo');
+  en.addEventListener('input',function(ev){if(ev.target.id==='en-n')S.ensN=ev.target.value});
+  en.addEventListener('click',function(ev){
+    var b=ev.target.closest('button');if(!b||!S.ens)return;
+    if(b.id==='en-close'){cerrarEnsayo();return}
+    var d=ensDoc();if(!d)return;
+    if(b.id==='en-png')ensDescargar('png',d);
+    else if(b.id==='en-print')ensDescargar('print',d);
+    else if(b.id==='en-xls')ensDescargar('xls',d);
+    else if(b.id==='en-edit'){var id=d.semana;cerrarEnsayo();setTab('semana');semOpen(id);window.scrollTo(0,0)}
+    else if(b.id==='en-copy'){
+      var f=function(v){return /^\d{4}-\d{2}-\d{2}$/.test(v)?dmy(v):String(v)},
+        txt=[ENS_H.join('\t')].concat(ensRows(d).map(function(r){return r.map(f).join('\t')})).join('\n');
+      if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){toast('Datos copiados. Pégalos en Excel.')},function(){toast('No se pudo copiar. Usa Descargar Excel.')});
+      else toast('No se pudo copiar. Usa Descargar Excel.')}})}
+
 /* ================= datos en vivo ================= */
 function refreshLotsIndex(){
   S.byKey=new Map();S.lotes.forEach(function(l){S.byKey.set(lk(l.lote),l)});
@@ -1204,15 +1404,10 @@ async function init(){
   var cl=document.querySelector('#e-cliente');
   cl.innerHTML='<option value=""></option>'+CLIENTES.map(function(c){return '<option>'+esc(c)+'</option>'}).join('');
   $('#s-fecha').value=today();$('#s-albaran').value=albaranSem(today());
-  bind();setModo('salida');renderRows();infoCopia();
+  bind();setModo('salida');renderRows();
   window.addEventListener('hashchange',handleHash);handleHash();
-  await LocalDB.init();S.db=LocalDB.api;
-  var MIME={pdf:'application/pdf',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',html:'text/html',json:'application/json'};
-  S.dl={save:async function(r){var ext=String(r.filename).split('.').pop(),blob=r.data instanceof Blob?r.data:new Blob([r.data],{type:MIME[ext]||'application/octet-stream'});
-    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=r.filename;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},5000);return {status:'saved'}}};
-  window.addEventListener('pagehide',function(){LocalDB.flush()});
-  if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js')}catch(e){}}
-  if(!S.db){setSync(false,'Sin base de datos');S.ready=true;updateSave();renderStock();renderScan();return}
+  try{if(window.claude&&window.claude.use){S.db=await window.claude.use('db');S.dl=await window.claude.use('downloads')}}catch(e){}
+  if(!S.db){setSync(false,'Sin base de datos');S.ready=true;updateSave();renderStock();renderScan();renderEnsayo();return}
   setSync(true,'Conectando…');
   S.db.collection('lotes').onSnapshot(function(snap){
     S.lotes=new Map(snap.docs.map(function(d){return [d.id,Object.assign({id:d.id},d.data())]}));
@@ -1223,9 +1418,11 @@ async function init(){
     var ae=document.activeElement;var typing=ae&&ae.closest&&ae.closest('#rows');
     if(typing)updateResults();else renderRows();
     if(S.tab==='stock')renderStock();validateEnt();refreshViews()},
-    function(){setSync(false,'Error de datos');});
+    function(){setSync(false,'Sin conexión');});
   S.db.collection('botes').onSnapshot(function(snap){
     S.botes={};snap.docs.forEach(function(d){var q=d.data().qty;if(q>0)S.botes[d.id]=q});refreshViews()},function(){});
+  S.db.collection('semanas').onSnapshot(function(snap){
+    S.semanas=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});S.semReady=true;refreshViews()},function(){S.semReady=true;refreshViews()});
   S.db.collection('movimientos').orderBy('creado','desc').limit(300).onSnapshot(function(snap){
     S.movs=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});
     if(S.tab==='historial')renderHist();validateEnt();refreshViews()},function(){});
@@ -1233,9 +1430,5 @@ async function init(){
 init();
 })();
 </script>
-<div id="live" hidden style="position:fixed;inset:0;z-index:50;background:#000;display:flex;flex-direction:column"><video id="live-video" playsinline muted style="flex:1;min-height:0;width:100%;object-fit:cover"></video>
-<div style="position:absolute;left:0;right:0;top:0;padding:16px;color:#fff;font:600 1.1rem system-ui;text-align:center;background:linear-gradient(#000a,#0000)" id="live-msg"></div>
-<div style="position:absolute;inset:0;display:grid;place-items:center;pointer-events:none"><div style="width:62vmin;height:62vmin;border:3px solid #fff;border-radius:18px;box-shadow:0 0 0 100vmax #0006"></div></div>
-<button id="live-close" type="button" style="position:absolute;left:16px;right:16px;bottom:24px;min-height:54px;border:0;border-radius:12px;background:#fff;color:#14202B;font:600 1.1rem system-ui">Cerrar cámara</button></div>
 
 </body></html>

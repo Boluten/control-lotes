@@ -1,4 +1,7 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#006F9E"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 <title>Control de Lotes Rapida</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -249,6 +252,13 @@ button.danger{background:transparent;border-color:var(--bad);color:var(--bad);mi
         <label style="display:flex;gap:8px;align-items:center;text-transform:none;font-weight:500;font-size:.92rem"><input type="checkbox" id="chk-all" style="width:20px;min-height:20px"> Incluir los ya descargados</label>
       </div>
     </div>
+    <div class="card" id="copia">
+      <h3>Copia de seguridad</h3>
+      <p class="hint">Exporta todos los lotes, semanas y tamaños de bote a un archivo .json, o carga un archivo como <span class="mono">datos-2026-11-23.json</span>.</p>
+      <div class="row"><button class="primary" id="cp-exp">Exportar datos</button><label class="lblbtn gho" for="cp-file" role="button" id="cp-imp">Importar datos</label></div>
+      <input type="file" id="cp-file" accept=".json,application/json" class="vh">
+      <div id="cp-box" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
     <div class="list" id="histlist"></div>
   </section>
 
@@ -290,6 +300,74 @@ button.danger{background:transparent;border-color:var(--bad);color:var(--bad);mi
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>/* Capa de conexión: sustituye a las funciones de Claude (base de datos y descargas) cuando la app se abre desde GitHub Pages. */
+(function(){
+'use strict';
+var FIREBASE_CONFIG={apiKey:"AIzaSyCqB4meHcd-2kbY1Rj1LBGTi4_iDyz5VM0",authDomain:"control-de-lotes-d74fd.firebaseapp.com",projectId:"control-de-lotes-d74fd",storageBucket:"control-de-lotes-d74fd.firebasestorage.app",messagingSenderId:"756104119459",appId:"1:756104119459:web:eb72dc34079b9fbd8feb16"};
+var KEY='cl_fbcfg',pend=null;
+function savedCfg(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+function parseCfg(t){
+  t=String(t||'');try{var j=JSON.parse(t);if(j&&j.apiKey&&j.projectId)return j}catch(e){}
+  var o={},re=/([A-Za-z]+)\s*:\s*["']([^"']*)["']/g,m;while((m=re.exec(t)))o[m[1]]=m[2];
+  return (o.apiKey&&o.projectId)?o:null}
+function overlay(title,body){
+  var d=document.createElement('div');d.id='fb-ov';
+  d.style.cssText='position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:16px';
+  d.innerHTML='<div class="card" style="width:100%;max-width:460px;margin-top:8vh"><h3>'+title+'</h3>'+body+'</div>';
+  document.body.appendChild(d);return d}
+function askCfg(){
+  return new Promise(function(res){
+    var o=overlay('Conectar la base de datos','<p class="hint">Pega aquí la configuración de tu proyecto de Firebase (el bloque que empieza por <span class="mono">const firebaseConfig = {</span>). Solo hace falta una vez en cada dispositivo.</p>'+
+      '<div class="f"><label for="fb-cfg">Configuración</label><textarea id="fb-cfg" rows="7" class="mono" autocomplete="off" spellcheck="false"></textarea></div><div id="fb-err"></div><button class="primary big" id="fb-ok">Guardar y continuar</button>');
+    o.querySelector('#fb-ok').addEventListener('click',function(){
+      var c=parseCfg(o.querySelector('#fb-cfg').value);
+      if(!c){o.querySelector('#fb-err').innerHTML='<div class="msg bad">No reconozco esa configuración. Copia el bloque completo, con apiKey y projectId.</div>';return}
+      try{localStorage.setItem(KEY,JSON.stringify(c))}catch(e){}
+      o.remove();res(c)})})}
+function askLogin(auth){
+  return new Promise(function(res){
+    var o=overlay('Entrar','<p class="hint">Usa el correo y la contraseña que creaste en Firebase.</p>'+
+      '<div class="f"><label for="fb-mail">Correo</label><input id="fb-mail" type="email" autocomplete="username" autocapitalize="off"></div>'+
+      '<div class="f"><label for="fb-pass">Contraseña</label><input id="fb-pass" type="password" autocomplete="current-password"></div><div id="fb-err"></div>'+
+      '<button class="primary big" id="fb-in">Entrar</button><button class="link" id="fb-reset" style="align-self:flex-start;padding-left:0">Cambiar la configuración de Firebase</button>');
+    var go=function(){
+      var b=o.querySelector('#fb-in');b.disabled=true;
+      auth.signInWithEmailAndPassword(o.querySelector('#fb-mail').value.trim(),o.querySelector('#fb-pass').value).then(function(){o.remove();res()},
+        function(e){b.disabled=false;var c=e&&e.code||'';
+          o.querySelector('#fb-err').innerHTML='<div class="msg bad">'+(/network/.test(c)?'Sin conexión.':/too-many/.test(c)?'Demasiados intentos. Espera un momento.':'Correo o contraseña incorrectos.')+'</div>'})};
+    o.querySelector('#fb-in').addEventListener('click',go);
+    o.querySelector('#fb-pass').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+    o.querySelector('#fb-reset').addEventListener('click',function(){try{localStorage.removeItem(KEY)}catch(e){}location.reload()})})}
+function clean(v){return JSON.parse(JSON.stringify(v))}
+function wrapRef(r){return {set:function(v){return r.set(clean(v))},update:function(v){return r.update(clean(v))},delete:function(){return r.delete()}}}
+function wrapCol(c){return {onSnapshot:function(a,b){return c.onSnapshot(a,b)},orderBy:function(f,d){return wrapCol(c.orderBy(f,d))},limit:function(n){return wrapCol(c.limit(n))},add:function(v){return c.add(clean(v))}}}
+function gate(){
+  if(pend)return pend;
+  pend=(async function(){
+    if(!window.firebase)return null;
+    var cfg=FIREBASE_CONFIG||savedCfg();if(!cfg)cfg=await askCfg();
+    if(!firebase.apps.length)firebase.initializeApp(cfg);
+    var auth=firebase.auth();
+    var user=await new Promise(function(res){var off=auth.onAuthStateChanged(function(u){off();res(u)})});
+    if(!user)await askLogin(auth);
+    var fs=firebase.firestore();
+    try{await fs.enablePersistence({synchronizeTabs:true})}catch(e){}
+    return {collection:function(n){return wrapCol(fs.collection(n))},doc:function(p){return wrapRef(fs.doc(p))}}})();
+  return pend}
+var TYPES={json:'application/json',html:'text/html',png:'image/png',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',csv:'text/csv',pdf:'application/pdf'};
+function save(o){return new Promise(function(res,rej){try{
+  var ext=String(o.filename).split('.').pop().toLowerCase(),b=new Blob([o.data],{type:TYPES[ext]||'application/octet-stream'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=o.filename;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500);res()}catch(e){rej(e)}})}
+window.claude={use:function(n){
+  if(n==='downloads')return Promise.resolve({save:save});
+  if(n==='db')return gate().catch(function(){return null});
+  return Promise.resolve(null)}};
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
+})();
+</script>
 <script>
 (function(){
 'use strict';
@@ -376,7 +454,7 @@ var QR=(function(){
   return {encode:encode,svg:svg}
 })();
 
-var APP_URL='https://claude.ai/artifact/4B9U9vxYhUMMAMVBfetRBn';
+var APP_URL=location.href.split('#')[0].split('?')[0];
 var CAT={"prefijos":{"ASG":"ASG","CARBONELL":"CAR","CROMACOLOR":"CRO","DRUCK AND CHEMIE":"DRU","HEIDELBERG":"HEI","SAKATA":"SAK","SIEGWERK":"SIE","SUN CHEMICAL":"SUN","WEIBULGER":"WEI"},"seq26":{"SIE":62,"DRU":22,"SUN":83,"SAK":74,"ASG":11},"meses":{"HUBER":9,"LITHO PACK":18,"LW":12,"MT862":17,"NPS":60,"NUTRIPACK 2":24,"OSF":12,"PLASTIC LED":12,"PTN":12,"SP":18,"STARLUXE":18,"SUNPAK":36,"UVM777":5,"VINYL OSF":6},"combos":[{"c":"SUN CHEMICAL","a":"TRASLUCIDA USTX48","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"BLACK USTX24","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"YELLOW USTX26","m":"STARLUXE","t":"UV"},{"c":"SAKATA","a":"YELLOW UV","m":"UVXCEL","t":"UV"},{"c":"SAKATA","a":"BLACK UV","m":"UVXCEL","t":"UV"},{"c":"SAKATA","a":"MAGENTA UV","m":"UVXCEL","t":"UV"},{"c":"SUN CHEMICAL","a":"MAGENTA USTX27","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"VIOLET USTX53","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"BLACK USTX50","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"CYAN USTX25","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"RED032 USTX32","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"GREEN USTX71","m":"STARLUXE","t":"UV"},{"c":"SIEGWERK","a":"TRASLUCIDA UV","m":"SP","t":"UV"},{"c":"SAKATA","a":"BLANCO OPACO UV","m":"VINYL OSF","t":"UV"},{"c":"SUN CHEMICAL","a":"ORANGE USTX21","m":"STARLUXE","t":"UV"},{"c":"SIEGWERK","a":"YELLOW","m":"NUTRIPACK 2","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"BLACK","m":"NUTRIPACK 2","t":"CONVENCIONAL"},{"c":"SAKATA","a":"CYAN UV","m":"UVXCEL","t":"UV"},{"c":"SIEGWERK","a":"BLANCO OPACO UV","m":"LITHO PACK","t":"UV"},{"c":"ASG","a":"ORO 873","m":"HUBER","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"PLATA UV 877","m":"UVM277","t":"UV"},{"c":"SUN CHEMICAL","a":"ORANGE021 USTX21","m":"STARLUXE","t":"UV"},{"c":"SAKATA","a":"PLATA UV 877","m":"LW","t":"UV"},{"c":"SUN CHEMICAL","a":"YELLOW FSP26","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"ASG","a":"ORO UV 874","m":"HUBER","t":"UV"},{"c":"SUN CHEMICAL","a":"P-286","m":"STARLUXE","t":"UV"},{"c":"ASG","a":"ORO 871","m":"HUBER","t":"CONVENCIONAL"},{"c":"ASG","a":"ORO UV 873","m":"HUBER","t":"UV"},{"c":"SAKATA","a":"TRASLUCIDA LED48","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"REFLEX BLUE UV","m":"SP","t":"UV"},{"c":"SUN CHEMICAL","a":"MAGENTA FSP27","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"BLACK FSP46","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"TRASLUCIDA UV","m":"LITHO PACK","t":"UV"},{"c":"ASG","a":"ORO UV 871","m":"HUBER","t":"UV"},{"c":"SUN CHEMICAL","a":"PINK USTX56","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"Cyan USTX25","m":"STARLUXE","t":"UV"},{"c":"SAKATA","a":"BLANCO OPACO LED00","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"YELLOW UV","m":"OSF","t":"UV"},{"c":"SIEGWERK","a":"BLACK UV","m":"SP","t":"UV"},{"c":"SUN CHEMICAL","a":"CYAN FSP25","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"SAKATA","a":"BLACK UV","m":"OSF","t":"UV"},{"c":"SAKATA","a":"MAGENTA UV","m":"OSF","t":"UV"},{"c":"SAKATA","a":"RUBINE RED LED42","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"VIOLET UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"WARM RED UV","m":"LITHO PACK","t":"UV"},{"c":"SUN CHEMICAL","a":"PLATA UV 877","m":"UVM777","t":"UV"},{"c":"SUN CHEMICAL","a":"TRASLUCIDA NPS48","m":"NPS","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"WARM RED UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"RUBINE RED UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"RHODAMINE RED UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"REFLEX BLUE UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"GREEN UV","m":"SP","t":"UV"},{"c":"SAKATA","a":"CYAN UV","m":"OSF","t":"UV"},{"c":"SAKATA","a":"BLACK UV LED24","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"RED032 LED32","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"CYAN UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"Cyan","m":"NUTRIPACK 2","t":"CONVENCIONAL"},{"c":"SAKATA","a":"MAGENTA UV LED27","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"YELLOW UV LED26","m":"PLASTIC LED","t":"UV"},{"c":"SUN CHEMICAL","a":"P-186","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"PLATA 877","m":"MT862","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"NEGRO FSP46","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"SAKATA","a":"GREEN LED71","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"ORANGE021 LED21","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"REFLEX BLUE UV LED91","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"RHODAMINE RED LED55","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"CYAN UV LED25","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"CYAN LED25","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"Cyan UV","m":"UVXCEL","t":"UV"},{"c":"SAKATA","a":"FLUOR PINK 806 C","m":"PTN","t":"CONVENCIONAL"},{"c":"SAKATA","a":"REFLEX BLUE LW91","m":"LW","t":"UV"},{"c":"SAKATA","a":"VIOLET LW53","m":"LW","t":"UV"},{"c":"SAKATA","a":"TRASLUCIDA LW48","m":"LW","t":"UV"},{"c":"SUN CHEMICAL","a":"P-368","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"YELLOW 012 NPS15","m":"NPS","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"VIOLET UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"MAGENTA UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"MAGENTA","m":"NUTRIPACK 2","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"YELLOW UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"RUBINE RED UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"RED 032 UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"MAGENTA UV","m":"SP","t":"UV"},{"c":"SAKATA","a":"WARM RED LED31","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"BLACK UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"CYAN UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"CYAN","m":"NUTRIPACK 2","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"GREEN UV","m":"LITHO PACK","t":"UV"},{"c":"ASG","a":"ORO 874 UV","m":"PLAST","t":"UV"},{"c":"ASG","a":"ORO 871 UV","m":"PLAST","t":"UV"},{"c":"ASG","a":"ORO 873 UV","m":"PLAST","t":"UV"},{"c":"SAKATA","a":"BLACK UV LED","m":"PLASTIC LED","t":"UV"},{"c":"DRUCK AND CHEMIE","a":"ADITIVO","m":"DH PLUS WASSERTOP","t":"UV"},{"c":"SAKATA","a":"BLACK LED24","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"BLACK LED24","m":"LW","t":"UV"},{"c":"DRUCK AND CHEMIE","a":"ALCOHOL","m":"ISO 800","t":"UV"},{"c":"SAKATA","a":"CYAN LED25","m":"LW","t":"UV"},{"c":"SAKATA","a":"BLUE072 LED72","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"BLANCO OPACO  UV","m":"VINYL OSF","t":"UV"},{"c":"SAKATA","a":"MAGENTA LED27","m":"LW","t":"UV"},{"c":"SAKATA","a":"GREEN LW71","m":"LW","t":"UV"},{"c":"SAKATA","a":"FLUOR PINK 806 C","m":"PTN","t":"UV"},{"c":"SAKATA","a":"MAGENTA LED27","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"Cyan UV","m":"SP","t":"UV"},{"c":"SAKATA","a":"YELLOW LED26","m":"LW","t":"UV"},{"c":"SAKATA","a":"YELLOW LED26","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"ORANGE LW21","m":"LW","t":"UV"},{"c":"SAKATA","a":"RUBINE RED LW42","m":"LW","t":"UV"},{"c":"SAKATA","a":"TRASLUCIDA LW48","m":"LW LM","t":"UV"},{"c":"SAKATA","a":"VIOLET LED53","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"VIOLET UV LED53","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"REFLEX BLUE LED91","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"BLUE072 UV LED072","m":"PLASTIC LED","t":"UV"},{"c":"SAKATA","a":"FLUOR PINK 806 C","m":"LW","t":"UV"},{"c":"SAKATA","a":"Cyan UV LED25","m":"PLASTIC LED","t":"UV"},{"c":"SIEGWERK","a":"ORANGE021 UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"RHODAMINE RE UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"RHODAMINE RED UV","m":"SP","t":"UV"},{"c":"SIEGWERK","a":"TRASLUCIDA","m":"SP","t":"UV"},{"c":"SUN CHEMICAL","a":"BLACK24 USTX24","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"BLANCO OPACO USTX84","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"BLACK NPS50","m":"NPS","t":"CONVENCIONAL"},{"c":"SIEGWERK","a":"YELLOW UV","m":"LITHO PACK","t":"UV"},{"c":"SIEGWERK","a":"ORANGE UV","m":"LITHO PACK","t":"UV"},{"c":"SUN CHEMICAL","a":"Cyan FSP25","m":"SUNPAK","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"GREEN NPS71","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"PROCESS BLUE NPS17","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"TRALUCIDA USTX48","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"TRASLUCIDA  USTX48","m":"STARLUXE","t":"UV"},{"c":"SUN CHEMICAL","a":"REFLEX BLUE NPS91","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"RUBINE RED NPS42","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"WARM RED NPS31","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"VIOLET NPS52","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"YELLOW NPS18","m":"NPS","t":"CONVENCIONAL"},{"c":"SUN CHEMICAL","a":"YELLOW USTX26(INT)","m":"STARLUXE","t":"UV"}],"tipos":["UV","CONVENCIONAL",""]};
 var MESES=Object.assign({VINYL:6,UVXCEL:12,UVM277:12},CAT.meses);
 var CLIENTES=Object.keys(CAT.prefijos);
@@ -1077,7 +1155,7 @@ function bind(){
       if(k==='articulo'||k==='marca'){var c=CAT.combos.find(function(x){return (!S.ent.cliente||x.c===S.ent.cliente)&&((k==='articulo'&&x.a===v)||(k==='marca'&&x.m===v))});
         if(c){if(k==='articulo'&&!S.ent.marca){S.ent.marca=c.m;$('#e-marca').value=c.m}if(!S.ent.tipo&&c.t){S.ent.tipo=c.t;$('#e-tipo').value=c.t}}}}
     if(k==='fecha'||k==='marca'||k==='articulo'||k==='cliente')autoEnt();else{updateCadHint();validateEnt()}})});
-  bindScan();bindEtq();bindSemana();
+  bindScan();bindEtq();bindSemana();bindCopia();
   $('#scan-file').addEventListener('change',onScanFile);
   $('#scan-gal').addEventListener('change',onScanFile);
   /* stock */
@@ -1218,7 +1296,18 @@ function renderSemanaList(){
   host.innerHTML=sem.map(function(d){
     var n=0;(d.zonas||[]).forEach(function(z){n+=(z.lotes||[]).length});
     return '<div class="item"><div class="a"><b class="num" style="font-size:1.5rem;line-height:1.1">'+esc(d.semana)+'</b><small>'+n+(n===1?' lote':' lotes')+' · '+(d.zonas||[]).length+' zonas</small></div><div class="q"></div>'+
-      '<div class="foot"><button class="ghost" style="min-height:38px;padding:6px 12px" data-wver="'+esc(d.semana)+'">Ver ensayo</button><button class="ghost" style="min-height:38px;padding:6px 12px" data-wed="'+esc(d.semana)+'">Editar</button></div></div>'}).join('')}
+      '<div class="foot">'+(S.wdel===d.semana?'<span class="hint">¿Eliminar la semana '+esc(d.semana)+'?</span><span class="row" style="gap:8px"><button class="danger" data-wdelok="'+esc(d.semana)+'">Sí, eliminar</button><button class="ghost" style="min-height:38px;padding:6px 12px" data-wdelno="1">No</button></span>':
+        '<button class="ghost" style="min-height:38px;padding:6px 12px" data-wver="'+esc(d.semana)+'">Ver ensayo</button><button class="ghost" style="min-height:38px;padding:6px 12px" data-wed="'+esc(d.semana)+'">Editar</button><button class="danger" data-wdel="'+esc(d.semana)+'">Eliminar</button>')+'</div></div>'}).join('')}
+async function eliminarSemana(id){
+  if(!S.db||!id)return;
+  try{
+    await S.db.doc('semanas/'+docId(id)).delete();
+    S.semanas=S.semanas.filter(function(x){return x.semana!==id});
+    S.wdel=null;S.ensDel=false;
+    if(S.ens===id)cerrarEnsayo();
+    if(S.sem&&S.sem.id===id)S.sem=null;
+    toast('Semana '+id+' eliminada');renderSemana();renderSemanaList()}
+  catch(e){toast('No se pudo eliminar: '+(e&&e.message||e))}}
 
 /* foto fija de la semana: lo que se guarda y lo que lleva la etiqueta */
 function semDoc(){
@@ -1334,6 +1423,7 @@ function renderEnsayo(){
     '<div class="row"><button class="primary" id="en-png">Descargar etiqueta PNG</button><button class="ghost" id="en-print">Imprimir</button><label class="copies" for="en-n">Copias <input id="en-n" type="number" min="1" max="24" inputmode="numeric" value="'+(S.ensN||2)+'"></label></div>'+
     '<p class="hint">El PNG se pega directamente en la hoja de trabajo.</p>'+
     '<div class="row"><button class="ghost" id="en-xls">Descargar Excel</button><button class="ghost" id="en-copy">Copiar datos</button><button class="ghost" id="en-edit">Editar semana</button></div>'+
+    (S.ensDel?'<div class="msg warn">¿Eliminar la semana '+esc(d.semana)+'? No se puede deshacer.</div><div class="row"><button class="danger" id="en-delok">Sí, eliminar</button><button class="ghost" id="en-delno">No</button></div>':'<div class="row"><button class="danger" id="en-del">Eliminar semana</button></div>')+
     '<div class="row"><label class="lblbtn gho" for="scan-file">Escanear otro QR</label>'+close+'</div></div>';
   (d.zonas||[]).forEach(function(z){
     h+='<div class="zona"><header><h3>'+esc(z.n)+'</h3><span class="hint">'+(z.lotes||[]).length+((z.lotes||[]).length===1?' lote':' lotes')+'</span></header>'+(z.lotes||[]).map(function(l){return ensLot(l,fin)}).join('')+'</div>'});
@@ -1376,14 +1466,20 @@ function bindSemana(){
   $('#w-q').addEventListener('input',function(){S.wq=this.value;renderSemanaList()});
   $('#w-list').addEventListener('click',function(ev){
     var b=ev.target.closest('button');if(!b)return;
-    if(b.dataset.wver)abrirEnsayo(b.dataset.wver);
+    if(b.dataset.wdel){S.wdel=b.dataset.wdel;renderSemanaList()}
+    else if(b.dataset.wdelno){S.wdel=null;renderSemanaList()}
+    else if(b.dataset.wdelok){eliminarSemana(b.dataset.wdelok)}
+    else if(b.dataset.wver)abrirEnsayo(b.dataset.wver);
     else if(b.dataset.wed){semOpen(b.dataset.wed);window.scrollTo({top:0,behavior:'smooth'})}});
   var en=$('#v-ensayo');
   en.addEventListener('input',function(ev){if(ev.target.id==='en-n')S.ensN=ev.target.value});
   en.addEventListener('click',function(ev){
     var b=ev.target.closest('button');if(!b||!S.ens)return;
-    if(b.id==='en-close'){cerrarEnsayo();return}
+    if(b.id==='en-close'){S.ensDel=false;cerrarEnsayo();return}
     var d=ensDoc();if(!d)return;
+    if(b.id==='en-del'){S.ensDel=true;renderEnsayo();return}
+    if(b.id==='en-delno'){S.ensDel=false;renderEnsayo();return}
+    if(b.id==='en-delok'){eliminarSemana(d.semana);return}
     if(b.id==='en-png')ensDescargar('png',d);
     else if(b.id==='en-print')ensDescargar('print',d);
     else if(b.id==='en-xls')ensDescargar('xls',d);
@@ -1393,6 +1489,57 @@ function bindSemana(){
         txt=[ENS_H.join('\t')].concat(ensRows(d).map(function(r){return r.map(f).join('\t')})).join('\n');
       if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){toast('Datos copiados. Pégalos en Excel.')},function(){toast('No se pudo copiar. Usa Descargar Excel.')});
       else toast('No se pudo copiar. Usa Descargar Excel.')}})}
+
+/* ================= COPIA DE SEGURIDAD: exportar e importar .json ================= */
+var CP={obj:null,name:'',busy:false};
+var LOTE_CAMPOS=['lote','cliente','articulo','marca','tipo','fecha','cad','stock','inicial','inicioUso','loteProv','albaran'];
+function cpBox(h){$('#cp-box').innerHTML=h}
+function sinId(o){var c=Object.assign({},o);delete c.id;return c}
+async function exportarDatos(){
+  if(!S.dl){toast('La descarga no está disponible en esta vista.');return}
+  var o={app:'control-lotes',tipo:'copia-completa',creado:today(),
+    lotes:[...S.lotes.values()].map(sinId),botes:S.botes,semanas:S.semanas.map(sinId),movimientos:S.movs.map(sinId)};
+  try{await S.dl.save({filename:'datos-'+today()+'.json',data:JSON.stringify(o,null,1)});toast('Datos exportados: '+o.lotes.length+' lotes')}
+  catch(e){if(!e||e.code!=='declined')toast('No se pudo exportar: '+(e&&e.message||e))}}
+async function onCopiaFile(){
+  var f=this.files&&this.files[0];this.value='';if(!f)return;
+  try{
+    var o=JSON.parse(await f.text());
+    if(!o||o.app!=='control-lotes'||!Array.isArray(o.lotes))throw new Error('Ese archivo no es una carga de esta app.');
+    var ok=o.lotes.filter(function(l){return l&&typeof l.lote==='string'&&l.lote.trim()&&isFinite(Number(l.stock))});
+    if(!ok.length)throw new Error('El archivo no trae ningún lote válido.');
+    if(ok.length>2000)throw new Error('El archivo trae demasiados lotes (máximo 2.000).');
+    CP.obj=o;CP.ok=ok;CP.name=f.name;renderCopia()}
+  catch(e){CP.obj=null;cpBox('<div class="msg bad">'+esc(e&&e.message||'No se pudo leer el archivo.')+'</div>')}}
+function renderCopia(){
+  if(!CP.obj){cpBox('');return}
+  var comp=CP.obj.tipo==='copia-completa';
+  cpBox('<div class="msg warn"><b class="mono">'+esc(CP.name)+'</b>: '+CP.ok.length+' lotes'+(comp?', '+((CP.obj.semanas||[]).length)+' semanas':'')+'. Al importar se <b>sustituye el stock actual</b> ('+S.lotes.size+' lotes). El historial de movimientos se conserva.</div>'+
+    '<div class="row"><button class="primary" id="cp-go"'+(S.db?'':' disabled')+'>Importar y sustituir el stock</button><button class="ghost" id="cp-no">Cancelar</button></div>')}
+async function importarDatos(){
+  if(!CP.obj||CP.busy||!S.db)return;CP.busy=true;
+  var ok=CP.ok,comp=CP.obj.tipo==='copia-completa',keep={},n=0;
+  try{
+    for(var i=0;i<ok.length;i++){
+      var l=ok[i],d={};LOTE_CAMPOS.forEach(function(k){if(l[k]!=null&&l[k]!=='')d[k]=l[k]});
+      d.lote=String(l.lote).trim();d.stock=Number(l.stock);if(d.inicial!=null)d.inicial=Number(d.inicial);else d.inicial=d.stock;
+      if(!d.cliente)d.cliente='';if(!d.articulo)d.articulo='';if(!d.marca)d.marca='';
+      keep[docId(d.lote)]=1;await S.db.doc('lotes/'+docId(d.lote)).set(d);n++;
+      cpBox('<div class="msg ok">Importando… '+n+' de '+ok.length+'</div>')}
+    var gone=[...S.lotes.keys()].filter(function(id){return !keep[id]});
+    for(var j=0;j<gone.length;j++)await S.db.doc('lotes/'+gone[j]).delete();
+    if(comp){
+      var bk=CP.obj.botes||{};for(var k in bk){if(bk[k]>0&&/^[A-Za-z0-9_\-.~:@+]{1,200}$/.test(k))await S.db.doc('botes/'+k).set({qty:Number(bk[k])})}
+      var sm=(CP.obj.semanas||[]).filter(function(x){return x&&/^\d{2}SEM\d{1,2}$/.test(x.semana||'')});
+      for(var m=0;m<sm.length;m++)await S.db.doc('semanas/'+docId(sm[m].semana)).set(sm[m])}
+    CP.obj=null;cpBox('<div class="msg ok">Importados <b>'+n+'</b> lotes'+(gone.length?'; se quitaron '+gone.length+' que no estaban en el archivo':'')+'.</div>');toast('Datos importados: '+n+' lotes')}
+  catch(e){cpBox('<div class="msg bad">Se importaron '+n+' lotes y falló: '+esc(e&&e.message||e)+'. Vuelve a importar el archivo.</div>')}
+  CP.busy=false}
+function bindCopia(){
+  $('#cp-exp').addEventListener('click',exportarDatos);
+  $('#cp-file').addEventListener('change',onCopiaFile);
+  $('#cp-box').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;
+    if(b.id==='cp-go')importarDatos();if(b.id==='cp-no'){CP.obj=null;renderCopia()}})}
 
 /* ================= datos en vivo ================= */
 function refreshLotsIndex(){
@@ -1431,4 +1578,5 @@ init();
 })();
 </script>
 
-</body></html>
+</body>
+</html>

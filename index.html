@@ -163,7 +163,7 @@ button.danger{background:transparent;border-color:var(--bad);color:var(--bad);mi
   <header class="top">
     <div class="brand">
       <svg width="34" height="34" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="17" cy="17" r="8"/><path d="M17 2v9M17 23v9M2 17h9M23 17h9"/></svg>
-      <div><h1>Control de lotes</h1><p>Rapida · tintas y barnices</p></div>
+      <div><h1>Control de tintas</h1><p>Rapida</p></div>
     </div>
     <div class="sync" id="sync"><span class="dot"></span><span id="sync-txt">Conectando…</span></div>
   </header>
@@ -353,6 +353,13 @@ function gate(){
     var auth=firebase.auth();
     var user=await new Promise(function(res){var off=auth.onAuthStateChanged(function(u){off();res(u)})});
     if(!user)await askLogin(auth);
+    var cu=auth.currentUser,card=document.querySelector('#copia');
+    if(card&&!document.querySelector('#fb-out')){
+      var r=document.createElement('div');r.className='row';r.style.justifyContent='space-between';
+      var sp=document.createElement('span');sp.className='hint';sp.appendChild(document.createTextNode('Sesión: '));var bb=document.createElement('b');bb.textContent=(cu&&cu.email)||'';sp.appendChild(bb);
+      var bt=document.createElement('button');bt.className='ghost';bt.id='fb-out';bt.type='button';bt.textContent='Cerrar sesión';
+      bt.addEventListener('click',function(){auth.signOut().then(function(){location.reload()},function(){location.reload()})});
+      r.appendChild(sp);r.appendChild(bt);card.appendChild(r)}
     var fs=firebase.firestore();
     try{await fs.enablePersistence({synchronizeTabs:true})}catch(e){}
     return {collection:function(n){return wrapCol(fs.collection(n))},doc:function(p){return wrapRef(fs.doc(p))}}})();
